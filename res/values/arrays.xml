@@ -50,4 +50,11 @@
 		<item>@string/buttons_navigation</item>
 		<item>@string/swipe_buttons_navigation</item>
 	</string-array>
+	<string-array name="planets_array">
+        <item>Fill</item>
+        <item>Edit</item>
+        <item>Send</item>
+        <item>Download</item>
+        <item>Delete</item>
+    </string-array>
 </resources>
