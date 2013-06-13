@@ -37,16 +37,21 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.ContentObserver;
 import android.database.Cursor;
-import android.graphics.Color;
-import android.graphics.drawable.ColorDrawable;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import android.support.v4.app.ActionBarDrawerToggle;
+import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -93,7 +98,16 @@ public class MainMenuActivity extends SherlockActivity {
 	private MyContentObserver mContentObserver = new MyContentObserver();
 
 	private static boolean EXIT = true;
+	
+	private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
 
+    private CharSequence mDrawerTitle;
+    private CharSequence mTitle;
+    private String[] mPlanetTitles;
+
+    
 	// private static boolean DO_NOT_EXIT = false;
 
 	@Override
@@ -112,7 +126,44 @@ public class MainMenuActivity extends SherlockActivity {
 		setContentView(R.layout.main_menu);
 		ActionBar bar = getSupportActionBar();
 		bar.setDisplayShowHomeEnabled(true);
-		//bar.setBackgroundDrawable(getResources().getDrawable(R.drawable.action_bar_gradient));
+		
+		
+		
+		/*Experimental section*/
+		
+		mPlanetTitles = getResources().getStringArray(R.array.planets_array);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
+
+        // Set the adapter for the list view
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+                R.layout.drawer_list_item, mPlanetTitles));
+        // Set the list's click listener
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        
+        mTitle = mDrawerTitle = getTitle();
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
+        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
+                R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
+
+            /** Called when a drawer has settled in a completely closed state. */
+            public void onDrawerClosed(View view) {
+                getSupportActionBar().setTitle(mTitle);
+                supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+
+            /** Called when a drawer has settled in a completely open state. */
+            public void onDrawerOpened(View drawerView) {
+                getSupportActionBar().setTitle(mDrawerTitle);
+                supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
+            }
+        };
+
+        // Set the drawer toggle as the DrawerListener
+        mDrawerLayout.setDrawerListener(mDrawerToggle);
+		
+		/*End of experimentalsection*/
+		
+		
 
 		{
 			// dynamically construct the "'Application name' vA.B" string
@@ -241,7 +292,57 @@ public class MainMenuActivity extends SherlockActivity {
 		
 		updateButtons();
 	}
+	
+	
+	
+	/*Experimental section*/
+	
+	private class DrawerItemClickListener implements ListView.OnItemClickListener {
+	    @Override
+	    public void onItemClick(AdapterView parent, View view, int position, long id) {
+	        selectItem(position);
+	    }
+	}
 
+	/** Swaps fragments in the main content view */
+	private void selectItem(int position) {
+	    // Create a new fragment and specify the planet to show based on position
+		Fragment fragment;
+		switch(position){
+	    case 0:
+	    case 1:
+	    case 2:
+	    case 3:
+	    case 4:
+	    default:
+	    	Log.i(getClass().getName(), "position : "+position);
+	    	fragment = new FormChooserList();
+	    	break;
+	    	
+	    }
+
+	    // Insert the fragment by replacing any existing fragment
+	    FragmentManager fragmentManager = (FragmentManager) getSupportFragmentManager();
+	    fragmentManager.beginTransaction()
+	                   .replace(R.id.content_frame, fragment)
+	                   .commit();
+
+	    // Highlight the selected item, update the title, and close the drawer
+	    mDrawer.setItemChecked(position, true);
+	    setTitle(mPlanetTitles[position]);
+	    mDrawerLayout.closeDrawer(mDrawer);
+	}
+
+	@Override
+	public void setTitle(CharSequence title) {
+	    mTitle = title;
+	    getSupportActionBar().setTitle(mTitle);
+	}
+	
+	/* End of experimental section*/
+
+	
+	
 	@Override
 	protected void onResume() {
 		super.onResume();
@@ -305,6 +406,7 @@ public class MainMenuActivity extends SherlockActivity {
 		super.onStop();
 	}
 
+	/*
 	@Override
 	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
 		Collect.getInstance().getActivityLogger()
@@ -314,9 +416,19 @@ public class MainMenuActivity extends SherlockActivity {
 				getString(R.string.general_preferences)).setIcon(
 				android.R.drawable.ic_menu_preferences).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
 		return true;
-	}
+	}*/
 
-	
+	@Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        // If the nav drawer is open, hide action items related to the content view
+		Collect.getInstance().getActivityLogger()
+		.logAction(this, "onCreateOptionsMenu", "show");
+		super.onCreateOptionsMenu(menu);
+		menu.add(0, MENU_PREFERENCES, 0,
+				getString(R.string.general_preferences)).setIcon(
+				android.R.drawable.ic_menu_preferences).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        return super.onPrepareOptionsMenu(menu);
+    }
 	
 	@Override
 	public boolean onOptionsItemSelected(

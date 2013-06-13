@@ -35,7 +35,7 @@ import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
 
-import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
@@ -45,7 +45,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author Yaw Anokwa (yanokwa@gmail.com)
  * @author Carl Hartung (carlhartung@gmail.com)
  */
-public class FormChooserList extends SherlockListActivity implements DiskSyncListener {
+public class FormChooserList extends SherlockListFragment implements DiskSyncListener {
 
     private static final String t = "FormChooserList";
     private static final boolean EXIT = true;
@@ -54,6 +54,9 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
     private DiskSyncTask mDiskSyncTask;
 
     private AlertDialog mAlertDialog;
+    
+    private String[] mMenuEntries;
+    private ListView mDrawerList;
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -67,15 +70,32 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
             return;
         }
         
+        getActivity().setContentView(R.layout.chooser_list_layout);
+        getActivity().setTitle(getString(R.string.enter_data));
+        
+        setRetainInstance(true);
+        
+        
+        /*Experimental section
+        
+        mMenuEntries = getResources().getStringArray(R.array.planets_array);
+        mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
-        setContentView(R.layout.chooser_list_layout);
-        setTitle(getString(R.string.enter_data));
+        // Set the adapter for the list view
+        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
+                R.layout.drawer_list_item, mMenuEntries));
+        // Set the list's click listener
+        mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
+        
+        End of experimental section*/
+        
+        
         
         //home button leads back to home
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        //getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         
         String sortOrder = FormsColumns.DISPLAY_NAME + " ASC, " + FormsColumns.JR_VERSION + " DESC";
-        Cursor c = managedQuery(FormsColumns.CONTENT_URI, null, null, null, sortOrder);
+        Cursor c = getActivity().managedQuery(FormsColumns.CONTENT_URI, null, null, null, sortOrder);
 
         String[] data = new String[] {
                 FormsColumns.DISPLAY_NAME, FormsColumns.DISPLAY_SUBTEXT, FormsColumns.JR_VERSION
@@ -86,17 +106,17 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
 
         // render total instance view
         SimpleCursorAdapter instances =
-            new VersionHidingCursorAdapter(FormsColumns.JR_VERSION, this, R.layout.two_item, c, data, view);
+            new VersionHidingCursorAdapter(FormsColumns.JR_VERSION, getActivity(), R.layout.two_item, c, data, view);
         setListAdapter(instances);
 
         if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
-            TextView tv = (TextView) findViewById(R.id.status_text);
+            TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
             tv.setText(savedInstanceState.getString(syncMsgKey));
         }
 
         // DiskSyncTask checks the disk for any forms not already in the content provider
         // that is, put here by dragging and dropping onto the SDCard
-        mDiskSyncTask = (DiskSyncTask) getLastNonConfigurationInstance();
+        mDiskSyncTask = (DiskSyncTask) getActivity().getLastNonConfigurationInstance();
         if (mDiskSyncTask == null) {
             Log.i(t, "Starting new disk sync task");
             mDiskSyncTask = new DiskSyncTask();
@@ -105,18 +125,71 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
         }
     }
 
+    /*Experimental section
+    
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }*/
 
-    @Override
-    public Object onRetainNonConfigurationInstance() {
-        // pass the thread on restart
-        return mDiskSyncTask;
+    /** Swaps fragments in the main content view */
+    /*private void selectItem(int position) {
+        // Create a new fragment and specify the planet to show based on position
+        Fragment fragment = new PlanetFragment();
+        Bundle args = new Bundle();
+        args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
+        fragment.setArguments(args);
+
+        // Insert the fragment by replacing any existing fragment
+        FragmentManager fragmentManager = (FragmentManager) getActivity().getSupportFragmentManager();
+        fragmentManager.beginTransaction()
+                       .replace(R.id.content_frame, fragment)
+                       .commit();
+
+        // Highlight the selected item, update the title, and close the drawer
+        mDrawer.setItemChecked(position, true);
+        setTitle(mPlanetTitles[position]);
+        mDrawerLayout.closeDrawer(mDrawer);
     }
 
-
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+    public void setTitle(CharSequence title) {
+        mTitle = title;
+        getActionBar().setTitle(mTitle);
+    }
+    
+    public static class PlanetFragment extends Fragment {
+        public static final String ARG_PLANET_NUMBER = "planet_number";
+
+        public PlanetFragment() {
+            // Empty constructor required for fragment subclasses
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_planet, container, false);
+            int i = getArguments().getInt(ARG_PLANET_NUMBER);
+            String planet = getResources().getStringArray(R.array.planets_array)[i];
+
+            int imageId = getResources().getIdentifier(planet.toLowerCase(Locale.getDefault()),
+                            "drawable", getActivity().getPackageName());
+            ((ImageView) rootView.findViewById(R.id.image)).setImageResource(imageId);
+            getActivity().setTitle(planet);
+            return rootView;
+        }
+    }
+    
+    End of experimental section*/
+    
+    
+
+	@Override
+	public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        TextView tv = (TextView) findViewById(R.id.status_text);
+        TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
         outState.putString(syncMsgKey, tv.getText().toString());
     }
 
@@ -125,27 +198,27 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
      * Stores the path of selected form and finishes.
      */
     @Override
-    protected void onListItemClick(ListView listView, View view, int position, long id) {
+	public void onListItemClick(ListView listView, View view, int position, long id) {
         // get uri to form
     	long idFormsTable = ((SimpleCursorAdapter) getListAdapter()).getItemId(position);
         Uri formUri = ContentUris.withAppendedId(FormsColumns.CONTENT_URI, idFormsTable);
 
 		Collect.getInstance().getActivityLogger().logAction(this, "onListItemClick", formUri.toString());
 
-        String action = getIntent().getAction();
+        String action = getActivity().getIntent().getAction();
         if (Intent.ACTION_PICK.equals(action)) {
             // caller is waiting on a picked form
-            setResult(RESULT_OK, new Intent().setData(formUri));
+            getActivity().setResult(getActivity().RESULT_OK, new Intent().setData(formUri));
         } else {
             // caller wants to view/edit a form, so launch formentryactivity
             startActivity(new Intent(Intent.ACTION_EDIT, formUri));
         }
 
-        finish();
+        getActivity().finish();
     }
     
     //TODO Back to previous task
-    public boolean onOptionsItemSelected(MenuItem item) {
+    /*public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
 	        case android.R.id.home:
 	            // This is called when the Home (Up) button is pressed
@@ -159,10 +232,10 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
 	            return true;
         }
         return super.onOptionsItemSelected(item);
-    }
+    }*/
 
     @Override
-    protected void onResume() {
+	public void onResume() {
         mDiskSyncTask.setDiskSyncListener(this);
         super.onResume();
 
@@ -173,21 +246,21 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
 
 
     @Override
-    protected void onPause() {
+	public void onPause() {
         mDiskSyncTask.setDiskSyncListener(null);
         super.onPause();
     }
 
 
     @Override
-    protected void onStart() {
+	public void onStart() {
     	super.onStart();
-		Collect.getInstance().getActivityLogger().logOnStart(this); 
+		Collect.getInstance().getActivityLogger().logOnStart(getActivity()); 
     }
     
     @Override
-    protected void onStop() {
-		Collect.getInstance().getActivityLogger().logOnStop(this); 
+	public void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(getActivity()); 
     	super.onStop();
     }
     
@@ -198,7 +271,7 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
     @Override
     public void SyncComplete(String result) {
         Log.i(t, "disk sync task complete");
-        TextView tv = (TextView) findViewById(R.id.status_text);
+        TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
         tv.setText(result);
     }
 
@@ -214,7 +287,7 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
 
     	Collect.getInstance().getActivityLogger().logAction(this, "createErrorDialog", "show");
 
-        mAlertDialog = new AlertDialog.Builder(this).create();
+        mAlertDialog = new AlertDialog.Builder(getActivity()).create();
         mAlertDialog.setIcon(android.R.drawable.ic_dialog_info);
         mAlertDialog.setMessage(errorMsg);
         DialogInterface.OnClickListener errorListener = new DialogInterface.OnClickListener() {
@@ -225,7 +298,7 @@ public class FormChooserList extends SherlockListActivity implements DiskSyncLis
                     	Collect.getInstance().getActivityLogger().logAction(this, "createErrorDialog", 
                     			shouldExit ? "exitApplication" : "OK");
                         if (shouldExit) {
-                            finish();
+                            getActivity().finish();
                         }
                         break;
                 }
