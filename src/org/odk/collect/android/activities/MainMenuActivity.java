@@ -202,6 +202,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
     	Log.e(getClass().getName(), "position : "+position);
     	
     	switch (position){
+    	default:
     	case 0:
     		fragment = new FormChooserList();
     		break;
@@ -214,8 +215,8 @@ public class MainMenuActivity extends SherlockFragmentActivity {
     	case 3:
     		fragment = new FormDownloadList();
     		break;
-    	default:
-    		fragment = new FormChooserList();
+    	case 4:
+    		fragment = new FormManagerList();
     		break;
     	}
 

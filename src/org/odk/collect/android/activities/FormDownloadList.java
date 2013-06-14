@@ -126,9 +126,9 @@ public class FormDownloadList extends SherlockListFragment implements FormListDo
         mAlertMsg = getString(R.string.please_wait);
 
         // need clear background before load
-        getListView().setBackgroundResource(R.drawable.background);
+        //getListView().setBackgroundResource(R.drawable.background);
 
-        /*
+        
         if (savedInstanceState != null) {
             // If the screen has rotated, the hashmap with the form ids and urls is passed here.
             if (savedInstanceState.containsKey(BUNDLE_FORM_MAP)) {
@@ -168,12 +168,8 @@ public class FormDownloadList extends SherlockListFragment implements FormListDo
                 (ArrayList<HashMap<String, String>>) savedInstanceState.getSerializable(FORMLIST);
         } else {
             mFormList = new ArrayList<HashMap<String, String>>();
-        }*/
+        }
 
-        
-
-        
-        
         setRetainInstance(true);
         
         return super.onCreateView(inflater, container, savedInstanceState);
