@@ -20,21 +20,19 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.ref.WeakReference;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.odk.collect.android.R;
-import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.preferences.AdminPreferencesActivity;
-import org.odk.collect.android.preferences.PreferencesActivity;
-import org.odk.collect.android.provider.InstanceProviderAPI;
-import org.odk.collect.android.provider.InstanceProviderAPI.InstanceColumns;
 
 import android.app.AlertDialog;
-import android.content.DialogInterface;
+import android.app.SearchManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.res.Configuration;
 import android.database.ContentObserver;
 import android.database.Cursor;
 import android.os.Bundle;
@@ -44,20 +42,20 @@ import android.preference.PreferenceManager;
 import android.support.v4.app.ActionBarDrawerToggle;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
-import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
-import android.view.View.OnClickListener;
+import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
-import android.widget.Button;
+import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.TextView;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockActivity;
+import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
@@ -67,25 +65,16 @@ import com.actionbarsherlock.view.MenuItem;
  * @author Carl Hartung (carlhartung@gmail.com)
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
-public class MainMenuActivity extends SherlockActivity {
-	private static final String t = "MainMenuActivity";
+public class MainMenuActivity extends SherlockFragmentActivity {
+	private DrawerLayout mDrawerLayout;
+    private ListView mDrawerList;
+    private ActionBarDrawerToggle mDrawerToggle;
 
-	private static final int PASSWORD_DIALOG = 1;
+    private CharSequence mDrawerTitle;
+    private CharSequence mTitle;
+    private String[] mPartsTitles;
 
-	// menu options
-	private static final int MENU_PREFERENCES = Menu.FIRST;
-
-	// buttons
-	private Button mEnterDataButton;
-	private Button mManageFilesButton;
-	private Button mSendDataButton;
-	private Button mReviewDataButton;
-	private Button mGetFormsButton;
-
-	private View mReviewSpacer;
-	private View mGetFormsSpacer;
-
-	private AlertDialog mAlertDialog;
+    private AlertDialog mAlertDialog;
 	private SharedPreferences mAdminPreferences;
 
 	private int mCompletedCount;
@@ -98,422 +87,187 @@ public class MainMenuActivity extends SherlockActivity {
 	private MyContentObserver mContentObserver = new MyContentObserver();
 
 	private static boolean EXIT = true;
-	
-	private DrawerLayout mDrawerLayout;
-    private ListView mDrawerList;
-    private ActionBarDrawerToggle mDrawerToggle;
 
-    private CharSequence mDrawerTitle;
-    private CharSequence mTitle;
-    private String[] mPlanetTitles;
-
-    
 	// private static boolean DO_NOT_EXIT = false;
+    
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.main_menu);
 
-	@Override
-	protected void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		// must be at the beginning of any activity that can be called from an
-		// external intent
-		Log.i(t, "Starting up, creating directories");
-		try {
-			Collect.createODKDirs();
-		} catch (RuntimeException e) {
-			createErrorDialog(e.getMessage(), EXIT);
-			return;
-		}
-
-		setContentView(R.layout.main_menu);
-		ActionBar bar = getSupportActionBar();
-		bar.setDisplayShowHomeEnabled(true);
-		
-		
-		
-		/*Experimental section*/
-		
-		mPlanetTitles = getResources().getStringArray(R.array.planets_array);
+        mTitle = mDrawerTitle = "MakinaCollect";
+        mPartsTitles = getResources().getStringArray(R.array.parts_array);
+        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
         mDrawerList = (ListView) findViewById(R.id.left_drawer);
 
-        // Set the adapter for the list view
+        // set a custom shadow that overlays the main content when the drawer opens
+        mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
+        // set up the drawer's list view with items and click listener
         mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mPlanetTitles));
-        // Set the list's click listener
+                R.layout.drawer_list_item, mPartsTitles));
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
-        
-        mTitle = mDrawerTitle = getTitle();
-        mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
-        mDrawerToggle = new ActionBarDrawerToggle(this, mDrawerLayout,
-                R.drawable.ic_drawer, R.string.drawer_open, R.string.drawer_close) {
 
-            /** Called when a drawer has settled in a completely closed state. */
+        // enable ActionBar app icon to behave as action to toggle nav drawer
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        getSupportActionBar().setHomeButtonEnabled(true);
+
+        // ActionBarDrawerToggle ties together the the proper interactions
+        // between the sliding drawer and the action bar app icon
+        mDrawerToggle = new ActionBarDrawerToggle(
+                this,                  /* host Activity */
+                mDrawerLayout,         /* DrawerLayout object */
+                R.drawable.ic_drawer,  /* nav drawer image to replace 'Up' caret */
+                R.string.drawer_open,  /* "open drawer" description for accessibility */
+                R.string.drawer_close  /* "close drawer" description for accessibility */
+                ) {
             public void onDrawerClosed(View view) {
                 getSupportActionBar().setTitle(mTitle);
                 supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
 
-            /** Called when a drawer has settled in a completely open state. */
             public void onDrawerOpened(View drawerView) {
                 getSupportActionBar().setTitle(mDrawerTitle);
                 supportInvalidateOptionsMenu(); // creates call to onPrepareOptionsMenu()
             }
         };
-
-        // Set the drawer toggle as the DrawerListener
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-		
-		/*End of experimentalsection*/
-		
-		
 
-		{
-			// dynamically construct the "'Application name' vA.B" string
-			TextView mainMenuMessageLabel = (TextView) findViewById(R.id.main_menu_header);
-			mainMenuMessageLabel.setText(Collect.getInstance()
-					.getVersionedAppName());
-		}
-
-		setTitle(getString(R.string.app_name));
-		
-		File f = new File(Collect.ODK_ROOT + "/collect.settings");
-		if (f.exists()) {
-			boolean success = loadSharedPreferencesFromFile(f);
-			if (success) {
-				Toast.makeText(this,
-						"Settings successfully loaded from file",
-						Toast.LENGTH_LONG).show();
-				f.delete();
-			} else {
-				Toast.makeText(
-						this,
-						"Sorry, settings file is corrupt and should be deleted or replaced",
-						Toast.LENGTH_LONG).show();
-			}
-		}
-
-		mReviewSpacer = findViewById(R.id.review_spacer);
-		mGetFormsSpacer = findViewById(R.id.get_forms_spacer);
-
-		mAdminPreferences = this.getSharedPreferences(
-				AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
-
-		// enter data button. expects a result.
-		mEnterDataButton = (Button) findViewById(R.id.enter_data);
-		mEnterDataButton.setText(getString(R.string.enter_data_button));
-		mEnterDataButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Collect.getInstance().getActivityLogger()
-						.logAction(this, "fillBlankForm", "click");
-				Intent i = new Intent(getApplicationContext(),
-						FormChooserList.class);
-				startActivity(i);
-			}
-		});
-
-		// review data button. expects a result.
-		mReviewDataButton = (Button) findViewById(R.id.review_data);
-		mReviewDataButton.setText(getString(R.string.review_data_button));
-		mReviewDataButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Collect.getInstance().getActivityLogger()
-						.logAction(this, "editSavedForm", "click");
-				Intent i = new Intent(getApplicationContext(),
-						InstanceChooserList.class);
-				startActivity(i);
-			}
-		});
-
-		// send data button. expects a result.
-		mSendDataButton = (Button) findViewById(R.id.send_data);
-		mSendDataButton.setText(getString(R.string.send_data_button));
-		mSendDataButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Collect.getInstance().getActivityLogger()
-						.logAction(this, "uploadForms", "click");
-				Intent i = new Intent(getApplicationContext(),
-						InstanceUploaderList.class);
-				startActivity(i);
-			}
-		});
-
-		// manage forms button. no result expected.
-		mGetFormsButton = (Button) findViewById(R.id.get_forms);
-		mGetFormsButton.setText(getString(R.string.get_forms));
-		mGetFormsButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Collect.getInstance().getActivityLogger()
-						.logAction(this, "downloadBlankForms", "click");
-				Intent i = new Intent(getApplicationContext(),
-						FormDownloadList.class);
-				startActivity(i);
-
-			}
-		});
-
-		// manage forms button. no result expected.
-		mManageFilesButton = (Button) findViewById(R.id.manage_forms);
-		mManageFilesButton.setText(getString(R.string.manage_files));
-		mManageFilesButton.setOnClickListener(new OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				Collect.getInstance().getActivityLogger()
-						.logAction(this, "deleteSavedForms", "click");
-				Intent i = new Intent(getApplicationContext(),
-						FileManagerTabs.class);
-				startActivity(i);
-			}
-		});
-
-		// count for finalized instances
-		String selection = InstanceColumns.STATUS + "=? or "
-				+ InstanceColumns.STATUS + "=?";
-		String selectionArgs[] = { InstanceProviderAPI.STATUS_COMPLETE,
-				InstanceProviderAPI.STATUS_SUBMISSION_FAILED };
-
-		mFinalizedCursor = managedQuery(InstanceColumns.CONTENT_URI, null,
-				selection, selectionArgs, null);
-		startManagingCursor(mFinalizedCursor);
-		mCompletedCount = mFinalizedCursor.getCount();
-		mFinalizedCursor.registerContentObserver(mContentObserver);
-
-		// count for finalized instances
-		String selectionSaved = InstanceColumns.STATUS + "=?";
-		String selectionArgsSaved[] = { InstanceProviderAPI.STATUS_INCOMPLETE };
-
-		mSavedCursor = managedQuery(InstanceColumns.CONTENT_URI, null,
-				selectionSaved, selectionArgsSaved, null);
-		startManagingCursor(mSavedCursor);
-		mSavedCount = mFinalizedCursor.getCount();
-		// don't need to set a content observer because it can't change in the
-		// background
-		
-		updateButtons();
-	}
-	
-	
-	
-	/*Experimental section*/
-	
-	private class DrawerItemClickListener implements ListView.OnItemClickListener {
-	    @Override
-	    public void onItemClick(AdapterView parent, View view, int position, long id) {
-	        selectItem(position);
-	    }
-	}
-
-	/** Swaps fragments in the main content view */
-	private void selectItem(int position) {
-	    // Create a new fragment and specify the planet to show based on position
-		Fragment fragment;
-		switch(position){
-	    case 0:
-	    case 1:
-	    case 2:
-	    case 3:
-	    case 4:
-	    default:
-	    	Log.i(getClass().getName(), "position : "+position);
-	    	fragment = new FormChooserList();
-	    	break;
-	    	
-	    }
-
-	    // Insert the fragment by replacing any existing fragment
-	    FragmentManager fragmentManager = (FragmentManager) getSupportFragmentManager();
-	    fragmentManager.beginTransaction()
-	                   .replace(R.id.content_frame, fragment)
-	                   .commit();
-
-	    // Highlight the selected item, update the title, and close the drawer
-	    mDrawer.setItemChecked(position, true);
-	    setTitle(mPlanetTitles[position]);
-	    mDrawerLayout.closeDrawer(mDrawer);
-	}
+        if (savedInstanceState == null) {
+            selectItem(0);
+        }
+    }
 
 	@Override
-	public void setTitle(CharSequence title) {
-	    mTitle = title;
-	    getSupportActionBar().setTitle(mTitle);
-	}
-	
-	/* End of experimental section*/
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getSupportMenuInflater();
+        inflater.inflate(R.menu.main, menu);
+        return super.onCreateOptionsMenu(menu);
+    }
 
-	
-	
-	@Override
-	protected void onResume() {
-		super.onResume();
-		SharedPreferences sharedPreferences = this.getSharedPreferences(
-				AdminPreferencesActivity.ADMIN_PREFERENCES, 0);
-
-		boolean edit = sharedPreferences.getBoolean(
-				AdminPreferencesActivity.KEY_EDIT_SAVED, true);
-		if (!edit) {
-			mReviewDataButton.setVisibility(View.GONE);
-			mReviewSpacer.setVisibility(View.GONE);
-		} else {
-			mReviewDataButton.setVisibility(View.VISIBLE);
-			mReviewSpacer.setVisibility(View.VISIBLE);
-		}
-
-		boolean send = sharedPreferences.getBoolean(
-				AdminPreferencesActivity.KEY_SEND_FINALIZED, true);
-		if (!send) {
-			mSendDataButton.setVisibility(View.GONE);
-		} else {
-			mSendDataButton.setVisibility(View.VISIBLE);
-		}
-
-		boolean get_blank = sharedPreferences.getBoolean(
-				AdminPreferencesActivity.KEY_GET_BLANK, true);
-		if (!get_blank) {
-			mGetFormsButton.setVisibility(View.GONE);
-			mGetFormsSpacer.setVisibility(View.GONE);
-		} else {
-			mGetFormsButton.setVisibility(View.VISIBLE);
-			mGetFormsSpacer.setVisibility(View.VISIBLE);
-		}
-
-		boolean delete_saved = sharedPreferences.getBoolean(
-				AdminPreferencesActivity.KEY_DELETE_SAVED, true);
-		if (!delete_saved) {
-			mManageFilesButton.setVisibility(View.GONE);
-		} else {
-			mManageFilesButton.setVisibility(View.VISIBLE);
-		}
-	}
-
-	@Override
-	protected void onPause() {
-		super.onPause();
-		if (mAlertDialog != null && mAlertDialog.isShowing()) {
-			mAlertDialog.dismiss();
-		}
-	}
-
-	@Override
-	protected void onStart() {
-		super.onStart();
-		Collect.getInstance().getActivityLogger().logOnStart(this);
-	}
-
-	@Override
-	protected void onStop() {
-		Collect.getInstance().getActivityLogger().logOnStop(this);
-		super.onStop();
-	}
-
-	/*
-	@Override
-	public boolean onCreateOptionsMenu(com.actionbarsherlock.view.Menu menu) {
-		Collect.getInstance().getActivityLogger()
-		.logAction(this, "onCreateOptionsMenu", "show");
-		super.onCreateOptionsMenu(menu);
-		menu.add(0, MENU_PREFERENCES, 0,
-				getString(R.string.general_preferences)).setIcon(
-				android.R.drawable.ic_menu_preferences).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-		return true;
-	}*/
-
-	@Override
+    /* Called whenever we call invalidateOptionsMenu() */
+    @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
-		Collect.getInstance().getActivityLogger()
-		.logAction(this, "onCreateOptionsMenu", "show");
-		super.onCreateOptionsMenu(menu);
-		menu.add(0, MENU_PREFERENCES, 0,
-				getString(R.string.general_preferences)).setIcon(
-				android.R.drawable.ic_menu_preferences).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        menu.findItem(R.id.general_preferences).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
-	
-	@Override
-	public boolean onOptionsItemSelected(
-			com.actionbarsherlock.view.MenuItem item) {
-		switch (item.getItemId()) {
-		case MENU_PREFERENCES:
-			Collect.getInstance()
-					.getActivityLogger()
-					.logAction(this, "onOptionsItemSelected",
-							"MENU_PREFERENCES");
-			Intent ig = new Intent(this, PreferencesActivity.class);
-			startActivity(ig);
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
-	
-	/**
-	 * Displays an error message and if necessary terminates application
-	 * 
-	 * @param errorMsg
-	 * @param shouldExit
-	 * 
-	 */
-	private void createErrorDialog(String errorMsg, final boolean shouldExit) {
-		Collect.getInstance().getActivityLogger()
-				.logAction(this, "createErrorDialog", "show");
-		mAlertDialog = new AlertDialog.Builder(this).create();
-		mAlertDialog.setIcon(android.R.drawable.ic_dialog_info);
-		mAlertDialog.setMessage(errorMsg);
-		DialogInterface.OnClickListener errorListener = new DialogInterface.OnClickListener() {
-			@Override
-			public void onClick(DialogInterface dialog, int i) {
-				switch (i) {
-				case DialogInterface.BUTTON1:
-					Collect.getInstance()
-							.getActivityLogger()
-							.logAction(this, "createErrorDialog",
-									shouldExit ? "exitApplication" : "OK");
-					if (shouldExit) {
-						finish();
-					}
-					break;
-				}
-			}
-		};
-		mAlertDialog.setCancelable(false);
-		mAlertDialog.setButton(getString(R.string.ok), errorListener);
-		mAlertDialog.show();
-	}
-	
-	/*
-	 * I have not the slightest idea of what is this.
-	 */
-	private void updateButtons() {
-		mFinalizedCursor.requery();
-		mCompletedCount = mFinalizedCursor.getCount();
-		if (mCompletedCount > 0) {
-			mSendDataButton.setText(getString(R.string.send_data_button,
-					mCompletedCount));
-		} else {
-			mSendDataButton.setText(getString(R.string.send_data));
-		}
 
-		mSavedCursor.requery();
-		mSavedCount = mSavedCursor.getCount();
-		if (mSavedCount > 0) {
-			mReviewDataButton.setText(getString(R.string.review_data_button,
-					mSavedCount));
-		} else {
-			mReviewDataButton.setText(getString(R.string.review_data));
-		}
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+         // The action bar home/up action should open or close the drawer.
+         // ActionBarDrawerToggle will take care of this.
+        // Handle action buttons
+        switch(item.getItemId()) {
+        case android.R.id.home:
+            if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
+                mDrawerLayout.closeDrawer(mDrawerList);
+            } else {
+                mDrawerLayout.openDrawer(mDrawerList);
+            }
+            return true;
+        case R.id.general_preferences:
+            // create intent to perform web search for this planet
+            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
+            intent.putExtra(SearchManager.QUERY, getSupportActionBar().getTitle());
+            // catch event that there's no activity to handle intent
+            if (intent.resolveActivity(getPackageManager()) != null) {
+                startActivity(intent);
+            } else {
+                Toast.makeText(this, "TOTO !", Toast.LENGTH_LONG).show();
+            }
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
 
-	}
+    /* The click listener for ListView in the navigation drawer */
+    private class DrawerItemClickListener implements ListView.OnItemClickListener {
+        @Override
+        public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+            selectItem(position);
+        }
+    }
+
+    private void selectItem(int position) {
+        // update the main content by replacing fragments
+        Fragment fragment = new FormChooserList();
+        Bundle args = new Bundle();
+        args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
+        fragment.setArguments(args);
+
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+
+        // update selected item and title, then close the drawer
+        mDrawerList.setItemChecked(position, true);
+        setTitle(mPartsTitles[position]);
+        mDrawerLayout.closeDrawer(mDrawerList);
+    }
+
+    @Override
+    public void setTitle(CharSequence title) {
+        mTitle = title;
+        getSupportActionBar().setTitle(mTitle);
+    }
+
+    /**
+     * When using the ActionBarDrawerToggle, you must call it during
+     * onPostCreate() and onConfigurationChanged()...
+     */
+
+    @Override
+    protected void onPostCreate(Bundle savedInstanceState) {
+        super.onPostCreate(savedInstanceState);
+        // Sync the toggle state after onRestoreInstanceState has occurred.
+        mDrawerToggle.syncState();
+    }
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        // Pass any configuration change to the drawer toggls
+        mDrawerToggle.onConfigurationChanged(newConfig);
+    }
+
+    /**
+     * Fragment that appears in the "content_frame", shows a planet
+     */
+    public static class PlanetFragment extends Fragment {
+        public static final String ARG_PLANET_NUMBER = "planet_number";
+
+        public PlanetFragment() {
+            // Empty constructor required for fragment subclasses
+        }
+
+        @Override
+        public View onCreateView(LayoutInflater inflater, ViewGroup container,
+                Bundle savedInstanceState) {
+            View rootView = inflater.inflate(R.layout.fragment_planet, container, false);
+            int i = getArguments().getInt(ARG_PLANET_NUMBER);
+            String planet = getResources().getStringArray(R.array.parts_array)[i];
+
+            int imageId = getResources().getIdentifier(planet.toLowerCase(Locale.getDefault()),
+                            "drawable", getActivity().getPackageName());
+            ((ImageView) rootView.findViewById(R.id.image)).setImageResource(imageId);
+            getActivity().setTitle(planet);
+            return rootView;
+        }
+    }
+
+
 
 	/**
 	 * notifies us that something changed
 	 * 
 	 */
 	private class MyContentObserver extends ContentObserver {
-
+	
 		public MyContentObserver() {
 			super(null);
 		}
-
+	
 		@Override
 		public void onChange(boolean selfChange) {
 			super.onChange(selfChange);
@@ -526,7 +280,7 @@ public class MainMenuActivity extends SherlockActivity {
 	 */
 	static class IncomingHandler extends Handler {
 		private final WeakReference<MainMenuActivity> mTarget;
-
+	
 		IncomingHandler(MainMenuActivity target) {
 			mTarget = new WeakReference<MainMenuActivity>(target);
 		}
@@ -614,5 +368,12 @@ public class MainMenuActivity extends SherlockActivity {
 		}
 		return res;
 	}
+	
+	private void updateButtons() {
+		mFinalizedCursor.requery();
+		
+		mSavedCursor.requery();
 
+
+	}
 }

@@ -30,7 +30,9 @@ import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.TextView;
@@ -57,23 +59,18 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
     
     private String[] mMenuEntries;
     private ListView mDrawerList;
-
+    
+    
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // must be at the beginning of any activity that can be called from an external intent
-        try {
-            Collect.createODKDirs();
-        } catch (RuntimeException e) {
-            createErrorDialog(e.getMessage(), EXIT);
-            return;
-        }
-        
-        getActivity().setContentView(R.layout.chooser_list_layout);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+		// TODO Auto-generated method stub
+		
+        inflater.inflate(R.layout.chooser_list_layout, container, false);
         getActivity().setTitle(getString(R.string.enter_data));
         
         setRetainInstance(true);
+        
         
         
         /*Experimental section
@@ -123,6 +120,8 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
             mDiskSyncTask.setDiskSyncListener(this);
             mDiskSyncTask.execute((Void[]) null);
         }
+        
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
     /*Experimental section
@@ -271,8 +270,9 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
     @Override
     public void SyncComplete(String result) {
         Log.i(t, "disk sync task complete");
-        TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
-        tv.setText(result);
+        //TODO This makes the application crash
+        //TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
+        //tv.setText(result);
     }
 
 
