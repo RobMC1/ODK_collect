@@ -57,14 +57,10 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
 
     private AlertDialog mAlertDialog;
     
-    private String[] mMenuEntries;
-    private ListView mDrawerList;
-    
     
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
 			Bundle savedInstanceState) {
-		// TODO Auto-generated method stub
 		
         inflater.inflate(R.layout.chooser_list_layout, container, false);
         getActivity().setTitle(getString(R.string.enter_data));
@@ -106,10 +102,10 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
             new VersionHidingCursorAdapter(FormsColumns.JR_VERSION, getActivity(), R.layout.two_item, c, data, view);
         setListAdapter(instances);
 
-        if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
+        /*if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
             TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
             tv.setText(savedInstanceState.getString(syncMsgKey));
-        }
+        }*/
 
         // DiskSyncTask checks the disk for any forms not already in the content provider
         // that is, put here by dragging and dropping onto the SDCard
@@ -188,8 +184,9 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
-        outState.putString(syncMsgKey, tv.getText().toString());
+        //TODO Not working, onPause() will cause the application to crash
+        //TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
+        //outState.putString(syncMsgKey, tv.getText().toString());
     }
 
 

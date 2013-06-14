@@ -28,6 +28,7 @@ import org.odk.collect.android.R;
 import org.odk.collect.android.preferences.AdminPreferencesActivity;
 
 import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -44,6 +45,7 @@ import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -131,25 +133,27 @@ public class MainMenuActivity extends SherlockFragmentActivity {
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
+        mDrawerLayout.openDrawer(mDrawerList);
 
         if (savedInstanceState == null) {
             selectItem(0);
         }
     }
 
-	@Override
+    //TODO 
+	/*@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
-    }
+    }*/
 
     /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        menu.findItem(R.id.general_preferences).setVisible(!drawerOpen);
+        //menu.findItem(R.id.general_preferences).setVisible(!drawerOpen);
         return super.onPrepareOptionsMenu(menu);
     }
 
@@ -166,7 +170,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
                 mDrawerLayout.openDrawer(mDrawerList);
             }
             return true;
-        case R.id.general_preferences:
+        /*case R.id.general_preferences:
             // create intent to perform web search for this planet
             Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
             intent.putExtra(SearchManager.QUERY, getSupportActionBar().getTitle());
@@ -176,7 +180,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
             } else {
                 Toast.makeText(this, "TOTO !", Toast.LENGTH_LONG).show();
             }
-            return true;
+            return true;*/
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -192,10 +196,28 @@ public class MainMenuActivity extends SherlockFragmentActivity {
 
     private void selectItem(int position) {
         // update the main content by replacing fragments
-        Fragment fragment = new FormChooserList();
-        Bundle args = new Bundle();
-        args.putInt(PlanetFragment.ARG_PLANET_NUMBER, position);
-        fragment.setArguments(args);
+    	
+    	Fragment fragment;
+    	
+    	Log.e(getClass().getName(), "position : "+position);
+    	
+    	switch (position){
+    	case 0:
+    		fragment = new FormChooserList();
+    		break;
+    	case 1:
+    		fragment = new InstanceChooserList();
+    		break;
+    	case 2:
+    		fragment = new InstanceUploaderList();
+    		break;
+    	case 3:
+    		fragment = new FormDownloadList();
+    		break;
+    	default:
+    		fragment = new FormChooserList();
+    		break;
+    	}
 
         FragmentManager fragmentManager = getSupportFragmentManager();
         fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
@@ -373,7 +395,19 @@ public class MainMenuActivity extends SherlockFragmentActivity {
 		mFinalizedCursor.requery();
 		
 		mSavedCursor.requery();
-
-
 	}
+
+	@Override
+	protected Dialog onCreateDialog(int id) {
+		//ugly way to display the dialog since there's no onCreateDialog method for Fragments
+		Fragment f = getSupportFragmentManager().findFragmentById(R.id.content_frame);
+		if (f instanceof FormDownloadList){
+			return ((FormDownloadList) f).createDialog(id);
+		}else{
+			return null;
+		}
+	}
+	
+	
+	
 }

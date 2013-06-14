@@ -45,13 +45,15 @@ import android.util.Log;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
-import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
@@ -68,7 +70,7 @@ import com.actionbarsherlock.view.MenuItem;
  *
  * @author Carl Hartung (carlhartung@gmail.com)
  */
-public class FormDownloadList extends SherlockListActivity implements FormListDownloaderListener,
+public class FormDownloadList extends SherlockListFragment implements FormListDownloaderListener,
         FormDownloaderListener {
     private static final String t = "RemoveFileManageList";
 
@@ -115,16 +117,18 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
     @SuppressWarnings("unchecked")
     @Override
-    public void onCreate(Bundle savedInstanceState) {
+    public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
+    	
+    	inflater.inflate(R.layout.remote_file_manage_list, container, false);
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.remote_file_manage_list);
-        setTitle(getString(R.string.get_forms));
+        getActivity().setTitle(getString(R.string.get_forms));
         mAlertMsg = getString(R.string.please_wait);
 
         // need clear background before load
         getListView().setBackgroundResource(R.drawable.background);
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
+        /*
         if (savedInstanceState != null) {
             // If the screen has rotated, the hashmap with the form ids and urls is passed here.
             if (savedInstanceState.containsKey(BUNDLE_FORM_MAP)) {
@@ -164,57 +168,27 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
                 (ArrayList<HashMap<String, String>>) savedInstanceState.getSerializable(FORMLIST);
         } else {
             mFormList = new ArrayList<HashMap<String, String>>();
-        }
+        }*/
 
-        if (getLastNonConfigurationInstance() instanceof DownloadFormListTask) {
-            mDownloadFormListTask = (DownloadFormListTask) getLastNonConfigurationInstance();
-            if (mDownloadFormListTask.getStatus() == AsyncTask.Status.FINISHED) {
-                try {
-                    dismissDialog(PROGRESS_DIALOG);
-                } catch (IllegalArgumentException e) {
-                    Log.i(t, "Attempting to close a dialog that was not previously opened");
-                }
-                mDownloadFormsTask = null;
-            }
-        } else if (getLastNonConfigurationInstance() instanceof DownloadFormsTask) {
-            mDownloadFormsTask = (DownloadFormsTask) getLastNonConfigurationInstance();
-            if (mDownloadFormsTask.getStatus() == AsyncTask.Status.FINISHED) {
-                try {
-                    dismissDialog(PROGRESS_DIALOG);
-                } catch (IllegalArgumentException e) {
-                    Log.i(t, "Attempting to close a dialog that was not previously opened");
-                }
-                mDownloadFormsTask = null;
-            }
-        } else if (getLastNonConfigurationInstance() == null) {
-            // first time, so get the formlist
-            downloadFormList();
-        }
+        
 
-        String[] data = new String[] {
-                FORMNAME, FORMID_DISPLAY, FORMDETAIL_KEY
-        };
-        int[] view = new int[] {
-                R.id.text1, R.id.text2
-        };
-
-        mFormListAdapter =
-            new SimpleAdapter(this, mFormList, R.layout.two_item_multiple_choice, data, view);
-        getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        getListView().setItemsCanFocus(false);
-        setListAdapter(mFormListAdapter);
+        
+        
+        setRetainInstance(true);
+        
+        return super.onCreateView(inflater, container, savedInstanceState);
     }
 
 
     @Override
-    protected void onStart() {
+	public void onStart() {
     	super.onStart();
-		Collect.getInstance().getActivityLogger().logOnStart(this);
+		Collect.getInstance().getActivityLogger().logOnStart(getActivity());
     }
 
     @Override
-    protected void onStop() {
-		Collect.getInstance().getActivityLogger().logOnStop(this);
+	public void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(getActivity());
     	super.onStop();
     }
 
@@ -224,7 +198,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
 
     @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) {
+	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 
 		Object o = getListAdapter().getItem(position);
@@ -241,11 +215,11 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
      */
     private void downloadFormList() {
         ConnectivityManager connectivityManager =
-            (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+            (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
         NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
 
         if (ni == null || !ni.isConnected()) {
-            Toast.makeText(this, R.string.no_connection, Toast.LENGTH_SHORT).show();
+            Toast.makeText(getActivity(), R.string.no_connection, Toast.LENGTH_SHORT).show();
         } else {
 
             mFormNamesAndURLs = new HashMap<String, FormDetails>();
@@ -253,7 +227,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
                 // This is needed because onPrepareDialog() is broken in 1.6.
                 mProgressDialog.setMessage(getString(R.string.please_wait));
             }
-            showDialog(PROGRESS_DIALOG);
+            getActivity().showDialog(PROGRESS_DIALOG);
 
             if (mDownloadFormListTask != null &&
             	mDownloadFormListTask.getStatus() != AsyncTask.Status.FINISHED) {
@@ -272,7 +246,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
 
     @Override
-    protected void onSaveInstanceState(Bundle outState) {
+	public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putBoolean(BUNDLE_TOGGLED_KEY, mToggled);
         outState.putInt(BUNDLE_SELECTED_COUNT, selectedItemCount());
@@ -303,11 +277,11 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         Collect.getInstance().getActivityLogger().logAction(this, "onCreateOptionsMenu", "show");
 
-        getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
-        return true;
+        getSherlockActivity().getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
+        super.onCreateOptionsMenu(menu, inflater);
     }
 
 
@@ -316,7 +290,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
         switch (item.getItemId()) {
             case R.id.preferences_download:
                 Collect.getInstance().getActivityLogger().logAction(this, "onMenuItemSelected", "MENU_PREFERENCES");
-                Intent i = new Intent(this, PreferencesActivity.class);
+                Intent i = new Intent(getActivity(), PreferencesActivity.class);
                 startActivity(i);
                 return true;
                 
@@ -346,12 +320,12 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
             case android.R.id.home:
                 // This is called when the Home (Up) button is pressed
                 // in the Action Bar.
-                Intent parentActivityIntent = new Intent(this, MainMenuActivity.class);
+                Intent parentActivityIntent = new Intent(getActivity(), MainMenuActivity.class);
                 parentActivityIntent.addFlags(
                         Intent.FLAG_ACTIVITY_CLEAR_TOP |
                         Intent.FLAG_ACTIVITY_NEW_TASK);
                 startActivity(parentActivityIntent);
-                finish();
+                getActivity().finish();
                 return true;
             	
         }
@@ -359,12 +333,11 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
     }
 
 
-    @Override
-    protected Dialog onCreateDialog(int id) {
+    protected Dialog createDialog(int id) {
         switch (id) {
             case PROGRESS_DIALOG:
                 Collect.getInstance().getActivityLogger().logAction(this, "onCreateDialog.PROGRESS_DIALOG", "show");
-                mProgressDialog = new ProgressDialog(this);
+                mProgressDialog = new ProgressDialog(getActivity());
                 DialogInterface.OnClickListener loadingButtonListener =
                     new DialogInterface.OnClickListener() {
                         @Override
@@ -394,14 +367,14 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
                 return mProgressDialog;
             case AUTH_DIALOG:
                 Collect.getInstance().getActivityLogger().logAction(this, "onCreateDialog.AUTH_DIALOG", "show");
-                AlertDialog.Builder b = new AlertDialog.Builder(this);
+                AlertDialog.Builder b = new AlertDialog.Builder(getActivity());
 
-                LayoutInflater factory = LayoutInflater.from(this);
+                LayoutInflater factory = LayoutInflater.from(getActivity());
                 final View dialogView = factory.inflate(R.layout.server_auth_dialog, null);
 
                 // Get the server, username, and password from the settings
                 SharedPreferences settings =
-                    PreferenceManager.getDefaultSharedPreferences(getBaseContext());
+                    PreferenceManager.getDefaultSharedPreferences(getActivity().getBaseContext());
                 String server =
                     settings.getString(PreferencesActivity.KEY_SERVER_URL,
                         getString(R.string.default_server_url));
@@ -442,7 +415,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Collect.getInstance().getActivityLogger().logAction(this, "onCreateDialog.AUTH_DIALOG", "Cancel");
-                            finish();
+                            getActivity().finish();
                         }
                     });
 
@@ -476,30 +449,30 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
         if (totalCount > 0) {
             // show dialog box
-            showDialog(PROGRESS_DIALOG);
+            getActivity().showDialog(PROGRESS_DIALOG);
 
             mDownloadFormsTask = new DownloadFormsTask();
             mDownloadFormsTask.setDownloaderListener(this);
             mDownloadFormsTask.execute(filesToDownload);
         } else {
-            Toast.makeText(getApplicationContext(), R.string.noselect_error, Toast.LENGTH_SHORT)
+            Toast.makeText(getActivity().getApplicationContext(), R.string.noselect_error, Toast.LENGTH_SHORT)
                     .show();
         }
     }
 
 
-    @Override
+    /*@Override
     public Object onRetainNonConfigurationInstance() {
         if (mDownloadFormsTask != null) {
             return mDownloadFormsTask;
         } else {
             return mDownloadFormListTask;
         }
-    }
+    }*/
 
 
     @Override
-    protected void onDestroy() {
+	public void onDestroy() {
         if (mDownloadFormListTask != null) {
             mDownloadFormListTask.setDownloaderListener(null);
         }
@@ -511,7 +484,46 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
 
     @Override
-    protected void onResume() {
+	public void onResume() {
+    	
+    	if (getActivity().getLastNonConfigurationInstance() instanceof DownloadFormListTask) {
+            mDownloadFormListTask = (DownloadFormListTask) getActivity().getLastNonConfigurationInstance();
+            if (mDownloadFormListTask.getStatus() == AsyncTask.Status.FINISHED) {
+                try {
+                    getActivity().dismissDialog(PROGRESS_DIALOG);
+                } catch (IllegalArgumentException e) {
+                    Log.i(t, "Attempting to close a dialog that was not previously opened");
+                }
+                mDownloadFormsTask = null;
+            }
+        } else if (getActivity().getLastNonConfigurationInstance() instanceof DownloadFormsTask) {
+            mDownloadFormsTask = (DownloadFormsTask) getActivity().getLastNonConfigurationInstance();
+            if (mDownloadFormsTask.getStatus() == AsyncTask.Status.FINISHED) {
+                try {
+                    getActivity().dismissDialog(PROGRESS_DIALOG);
+                } catch (IllegalArgumentException e) {
+                    Log.i(t, "Attempting to close a dialog that was not previously opened");
+                }
+                mDownloadFormsTask = null;
+            }
+        } else if (getActivity().getLastNonConfigurationInstance() == null) {
+            // first time, so get the formlist
+            downloadFormList();
+        }
+    	
+    	String[] data = new String[] {
+                FORMNAME, FORMID_DISPLAY, FORMDETAIL_KEY
+        };
+        int[] view = new int[] {
+                R.id.text1, R.id.text2
+        };
+
+        mFormListAdapter =
+            new SimpleAdapter(getActivity(), mFormList, R.layout.two_item_multiple_choice, data, view);
+        getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        getListView().setItemsCanFocus(false);
+        setListAdapter(mFormListAdapter);
+        
         if (mDownloadFormListTask != null) {
             mDownloadFormListTask.setDownloaderListener(this);
         }
@@ -526,7 +538,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
 
     @Override
-    protected void onPause() {
+	public void onPause() {
         if (mAlertDialog != null && mAlertDialog.isShowing()) {
             mAlertDialog.dismiss();
         }
@@ -542,7 +554,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
      */
     @Override
 	public void formListDownloadingComplete(HashMap<String, FormDetails> result) {
-        dismissDialog(PROGRESS_DIALOG);
+        getActivity().dismissDialog(PROGRESS_DIALOG);
         mDownloadFormListTask.setDownloaderListener(null);
         mDownloadFormListTask = null;
 
@@ -556,7 +568,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
 
         if (result.containsKey(DownloadFormListTask.DL_AUTH_REQUIRED)) {
             // need authorization
-            showDialog(AUTH_DIALOG);
+            getActivity().showDialog(AUTH_DIALOG);
         } else if (result.containsKey(DownloadFormListTask.DL_ERROR_MSG)) {
             // Download failed
             String dialogMessage =
@@ -611,7 +623,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
      */
     private void createAlertDialog(String title, String message, final boolean shouldExit) {
         Collect.getInstance().getActivityLogger().logAction(this, "createAlertDialog", "show");
-        mAlertDialog = new AlertDialog.Builder(this).create();
+        mAlertDialog = new AlertDialog.Builder(getActivity()).create();
         mAlertDialog.setTitle(title);
         mAlertDialog.setMessage(message);
         DialogInterface.OnClickListener quitListener = new DialogInterface.OnClickListener() {
@@ -624,7 +636,7 @@ public class FormDownloadList extends SherlockListActivity implements FormListDo
                         mAlertShowing = false;
                         // successful download, so quit
                         if (shouldExit) {
-                            finish();
+                            getActivity().finish();
                         }
                         break;
                 }

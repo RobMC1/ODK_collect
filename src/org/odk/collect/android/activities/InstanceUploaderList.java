@@ -35,14 +35,17 @@ import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.provider.BaseColumns;
 import android.util.Log;
+import android.view.LayoutInflater;
 import android.view.View;
+import android.view.ViewGroup;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Toast;
 
 import com.actionbarsherlock.app.ActionBar;
-import com.actionbarsherlock.app.SherlockListActivity;
+import com.actionbarsherlock.app.SherlockListFragment;
 import com.actionbarsherlock.view.Menu;
+import com.actionbarsherlock.view.MenuInflater;
 import com.actionbarsherlock.view.MenuItem;
 
 /**
@@ -53,7 +56,7 @@ import com.actionbarsherlock.view.MenuItem;
  * @author Yaw Anokwa (yanokwa@gmail.com)
  */
 
-public class InstanceUploaderList extends SherlockListActivity implements DeleteInstancesListener {
+public class InstanceUploaderList extends SherlockListFragment implements DeleteInstancesListener {
 
 	private static final String t = "InstanceUploaderList";
 	
@@ -80,20 +83,30 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 				InstanceProviderAPI.STATUS_SUBMISSION_FAILED,
 				InstanceProviderAPI.STATUS_SUBMITTED };
 		String sortOrder = InstanceColumns.DISPLAY_NAME + " ASC";
-		Cursor c = managedQuery(InstanceColumns.CONTENT_URI, null, selection,
+		Cursor c = getActivity().managedQuery(InstanceColumns.CONTENT_URI, null, selection,
 				selectionArgs, sortOrder);
 		return c;
 	}
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.instance_uploader_list);
+	public View onCreateView(LayoutInflater inflater, ViewGroup container,
+			Bundle savedInstanceState) {
 		
-		ActionBar bar = getSupportActionBar();
-		bar.setDisplayHomeAsUpEnabled(true);
+        inflater.inflate(R.layout.instance_uploader_list, container, false);
+        getActivity().setTitle(getString(R.string.enter_data));
+        
+        setRetainInstance(true);
+        
+        // set title
+     	getActivity().setTitle(getString(R.string.send_data));
 
+		return super.onCreateView(inflater, container, savedInstanceState);
+	}
+	
+	
 
+	@Override
+	public void onResume() {
 		Cursor c = getAllCursor();
 
 		String[] data = new String[] { InstanceColumns.DISPLAY_NAME,
@@ -101,15 +114,14 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 		int[] view = new int[] { R.id.text1, R.id.text2 };
 
 		// render total instance view
-		mInstances = new SimpleCursorAdapter(this,
+		mInstances = new SimpleCursorAdapter(getActivity(),
 				R.layout.two_item_multiple_choice, c, data, view);
 		
 		setListAdapter(mInstances);
 		getListView().setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
 		getListView().setItemsCanFocus(false);
 
-		// set title
-		setTitle(getString(R.string.send_data));
+		
 
 		// if current activity is being reinitialized due to changing
 		// orientation restore all check
@@ -127,17 +139,18 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 			}
 			mRestored = false;
 		}
+		super.onResume();
 	}
 
 	@Override
-	protected void onStart() {
+	public void onStart() {
 		super.onStart();
-		Collect.getInstance().getActivityLogger().logOnStart(this);
+		Collect.getInstance().getActivityLogger().logOnStart(getActivity());
 	}
 
 	@Override
-	protected void onStop() {
-		Collect.getInstance().getActivityLogger().logOnStop(this);
+	public void onStop() {
+		Collect.getInstance().getActivityLogger().logOnStop(getActivity());
 		super.onStop();
 	}
 
@@ -148,21 +161,20 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 			instanceIDs[i] = mSelected.get(i);
 		}
 
-		Intent i = new Intent(this, InstanceUploaderActivity.class);
+		Intent i = new Intent(getActivity(), InstanceUploaderActivity.class);
 		i.putExtra(FormEntryActivity.KEY_INSTANCES, instanceIDs);
 		startActivityForResult(i, INSTANCE_UPLOADER);
 	}
-
+	
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
 		Collect.getInstance().getActivityLogger()
 				.logAction(this, "onCreateOptionsMenu", "show");
-		super.onCreateOptionsMenu(menu);
 		
 		//creates the select all, upload and delete buttons on the action bar from xml preference will be either in action or overflow
-		getSupportMenuInflater().inflate(R.menu.menu_instance_uploader, menu);
+		getSherlockActivity().getSupportMenuInflater().inflate(R.menu.menu_instance_uploader, menu);
 		
-		return true;
+		super.onCreateOptionsMenu(menu, inflater);
 	}
 
 	@Override
@@ -175,13 +187,13 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 			return true;
 		
 		case R.id.upload_instance:
-			ConnectivityManager connectivityManager = (ConnectivityManager) getSystemService(Context.CONNECTIVITY_SERVICE);
+			ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
 			NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
 
 			if (NetworkReceiver.running == true) {
 				//another upload is already running
 				Toast.makeText(
-						InstanceUploaderList.this,
+						getActivity(),
 						"Background send running, please try again shortly",
 						Toast.LENGTH_SHORT).show();
 			} else if (ni == null || !ni.isConnected()) {
@@ -189,7 +201,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 				Collect.getInstance().getActivityLogger()
 						.logAction(this, "uploadButton", "noConnection");
 
-				Toast.makeText(InstanceUploaderList.this,
+				Toast.makeText(getActivity(),
 						R.string.no_connection, Toast.LENGTH_SHORT).show();
 			} else {
 				Collect.getInstance()
@@ -205,7 +217,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 					InstanceUploaderList.this.getListView().clearChoices();
 				} else {
 					// no items selected
-					Toast.makeText(getApplicationContext(),
+					Toast.makeText(getActivity().getApplicationContext(),
 							getString(R.string.noselect_error),
 							Toast.LENGTH_SHORT).show();
 				}
@@ -233,12 +245,12 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 		case android.R.id.home:
 	         // This is called when the Home (Up) button is pressed
 	         // in the Action Bar.
-	         Intent parentActivityIntent = new Intent(this, MainMenuActivity.class);
+	         Intent parentActivityIntent = new Intent(getActivity(), MainMenuActivity.class);
 	         parentActivityIntent.addFlags(
 	                 Intent.FLAG_ACTIVITY_CLEAR_TOP |
 	                 Intent.FLAG_ACTIVITY_NEW_TASK);
 	         startActivity(parentActivityIntent);
-	         finish();
+	         getActivity().finish();
 	         return true;
 		case R.id.delete_upload_instance :
 			delete();
@@ -248,7 +260,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 	}
 
 	private void createPreferencesMenu() {
-		Intent i = new Intent(this, PreferencesActivity.class);
+		Intent i = new Intent(getActivity(), PreferencesActivity.class);
 		startActivity(i);
 	}
 	
@@ -257,7 +269,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 		if (mSelected.size() > 0) {
 			createDeleteInstancesDialog();
 		} else {
-			Toast.makeText(getApplicationContext(),
+			Toast.makeText(getActivity().getApplicationContext(),
 					R.string.noselect_error, Toast.LENGTH_SHORT).show();
 		}
 	}
@@ -265,7 +277,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 	private void createDeleteInstancesDialog() {
         Collect.getInstance().getActivityLogger().logAction(this, "createDeleteInstancesDialog", "show");
 
-		mAlertDialog = new AlertDialog.Builder(this).create();
+		mAlertDialog = new AlertDialog.Builder(getActivity()).create();
 		mAlertDialog.setTitle(getString(R.string.delete_file));
 		mAlertDialog.setMessage(getString(R.string.delete_confirm,
 				mSelected.size()));
@@ -294,18 +306,18 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 	private void deleteSelectedInstances() {
 		if (mDeleteInstancesTask == null) {
 			mDeleteInstancesTask = new DeleteInstancesTask();
-			mDeleteInstancesTask.setContentResolver(getContentResolver());
+			mDeleteInstancesTask.setContentResolver(getActivity().getContentResolver());
 			mDeleteInstancesTask.setDeleteListener(this);
 			mDeleteInstancesTask.execute(mSelected.toArray(new Long[mSelected
 					.size()]));
 		} else {
-			Toast.makeText(this, getString(R.string.file_delete_in_progress),
+			Toast.makeText(getActivity(), getString(R.string.file_delete_in_progress),
 					Toast.LENGTH_LONG).show();
 		}
 	}
 
 	@Override
-	protected void onListItemClick(ListView l, View v, int position, long id) {
+	public void onListItemClick(ListView l, View v, int position, long id) {
 		super.onListItemClick(l, v, position, id);
 
 		// get row id from db
@@ -322,31 +334,35 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 			mSelected.add(k);
 	}
 
+	
+	
 	@Override
-	protected void onRestoreInstanceState(Bundle savedInstanceState) {
-		super.onRestoreInstanceState(savedInstanceState);
+	public void onActivityCreated(Bundle savedInstanceState) {
+		//TODO saves toggled items on device rotation
+		/*
 		long[] selectedArray = savedInstanceState
 				.getLongArray(BUNDLE_SELECTED_ITEMS_KEY);
 		for (int i = 0; i < selectedArray.length; i++)
 			mSelected.add(selectedArray[i]);
 		mToggled = savedInstanceState.getBoolean(BUNDLE_TOGGLED_KEY);
-		mRestored = true;
+		mRestored = true;*/
+		super.onActivityCreated(savedInstanceState);
 	}
 
 	@Override
-	protected void onSaveInstanceState(Bundle outState) {
-		super.onSaveInstanceState(outState);
+	public void onSaveInstanceState(Bundle outState) {
 		long[] selectedArray = new long[mSelected.size()];
 		for (int i = 0; i < mSelected.size(); i++)
 			selectedArray[i] = mSelected.get(i);
 		outState.putLongArray(BUNDLE_SELECTED_ITEMS_KEY, selectedArray);
 		outState.putBoolean(BUNDLE_TOGGLED_KEY, mToggled);
+		super.onSaveInstanceState(outState);
 	}
 
 	@Override
-	protected void onActivityResult(int requestCode, int resultCode,
+	public void onActivityResult(int requestCode, int resultCode,
 			Intent intent) {
-		if (resultCode == RESULT_CANCELED) {
+		if (resultCode == getActivity().RESULT_CANCELED) {
 			return;
 		}
 		switch (requestCode) {
@@ -356,7 +372,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 				mSelected.clear();
 				getListView().clearChoices();
 				if (mInstances.isEmpty()) {
-					finish();
+					getActivity().finish();
 				}
 			}
 			break;
@@ -372,7 +388,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
         Collect.getInstance().getActivityLogger().logAction(this, "deleteComplete", Integer.toString(deletedInstances));
 		if (deletedInstances == mSelected.size()) {
 			// all deletes were successful
-			Toast.makeText(this,
+			Toast.makeText(getActivity(),
 					getString(R.string.file_deleted_ok, deletedInstances),
 					Toast.LENGTH_SHORT).show();
 		} else {
@@ -380,7 +396,7 @@ public class InstanceUploaderList extends SherlockListActivity implements Delete
 			Log.e(t, "Failed to delete "
 					+ (mSelected.size() - deletedInstances) + " instances");
 			Toast.makeText(
-					this,
+					getActivity(),
 					getString(R.string.file_deleted_error, mSelected.size()
 							- deletedInstances, mSelected.size()),
 					Toast.LENGTH_LONG).show();
