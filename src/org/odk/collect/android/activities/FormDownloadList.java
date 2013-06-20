@@ -271,61 +271,27 @@ public class FormDownloadList extends SherlockListFragment implements FormListDo
         return count;
     }
 
-
-    @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        Collect.getInstance().getActivityLogger().logAction(this, "onCreateOptionsMenu", "show");
-
-        getSherlockActivity().getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
-        super.onCreateOptionsMenu(menu, inflater);
+    protected void refreshFormsOption(){
+    	Collect.getInstance().getActivityLogger().logAction(this, "refreshForms", "");
+        mToggled = false;
+        downloadFormList();
+        FormDownloadList.this.getListView().clearChoices();
+        clearChoices();
     }
-
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.preferences_download:
-                Collect.getInstance().getActivityLogger().logAction(this, "onMenuItemSelected", "MENU_PREFERENCES");
-                Intent i = new Intent(getActivity(), PreferencesActivity.class);
-                startActivity(i);
-                return true;
-                
-            case R.id.select_all:
-            	ListView ls = getListView();
-                mToggled = !mToggled;
-                Collect.getInstance().getActivityLogger().logAction(this, "toggleFormCheckbox", Boolean.toString(mToggled));
-                for (int pos = 0; pos < ls.getCount(); pos++) {
-                    ls.setItemChecked(pos, mToggled);
-                }
-            	return true;
-            	
-            case R.id.forms_get:
-            	downloadSelectedFiles();
-                mToggled = false;
-                clearChoices();
-                return true;
-                
-            case R.id.refresh_forms:
-            	Collect.getInstance().getActivityLogger().logAction(this, "refreshForms", "");
-                mToggled = false;
-                downloadFormList();
-                FormDownloadList.this.getListView().clearChoices();
-                clearChoices();
-                return true;
-                
-            case android.R.id.home:
-                // This is called when the Home (Up) button is pressed
-                // in the Action Bar.
-                Intent parentActivityIntent = new Intent(getActivity(), MainMenuActivity.class);
-                parentActivityIntent.addFlags(
-                        Intent.FLAG_ACTIVITY_CLEAR_TOP |
-                        Intent.FLAG_ACTIVITY_NEW_TASK);
-                startActivity(parentActivityIntent);
-                getActivity().finish();
-                return true;
-            	
+    
+    protected void getFormsOption(){
+    	downloadSelectedFiles();
+        mToggled = false;
+        clearChoices();
+    }
+    
+    protected void selectAllOption(){
+    	ListView ls = getListView();
+        mToggled = !mToggled;
+        Collect.getInstance().getActivityLogger().logAction(this, "toggleFormCheckbox", Boolean.toString(mToggled));
+        for (int pos = 0; pos < ls.getCount(); pos++) {
+            ls.setItemChecked(pos, mToggled);
         }
-        return super.onOptionsItemSelected(item);
     }
 
 

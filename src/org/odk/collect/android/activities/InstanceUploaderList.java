@@ -176,87 +176,61 @@ public class InstanceUploaderList extends SherlockListFragment implements Delete
 		
 		super.onCreateOptionsMenu(menu, inflater);
 	}
+	
+	protected void selectAllOption (){
+		// toggle selections of items to all or none
+		ListView ls = getListView();
+		mToggled = !mToggled;
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case R.id.preferences_uploader:
+		Collect.getInstance()
+				.getActivityLogger()
+				.logAction(this, "toggleButton",
+		Boolean.toString(mToggled));
+		// remove all items from selected list
+		mSelected.clear();
+		for (int pos = 0; pos < ls.getCount(); pos++) {
+			ls.setItemChecked(pos, mToggled);
+			// add all items if mToggled sets to select all
+			if (mToggled) mSelected.add(ls.getItemIdAtPosition(pos));
+		}
+	}
+	
+	protected void uploadInstancesOption (){
+		ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
+		NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
+
+		if (NetworkReceiver.running == true) {
+			//another upload is already running
+			Toast.makeText(
+					getActivity(),
+					"Background send running, please try again shortly",
+					Toast.LENGTH_SHORT).show();
+		} else if (ni == null || !ni.isConnected()) {
+			//no network connection
 			Collect.getInstance().getActivityLogger()
-					.logAction(this, "onMenuItemSelected", "MENU_PREFERENCES");
-			createPreferencesMenu();
-			return true;
-		
-		case R.id.upload_instance:
-			ConnectivityManager connectivityManager = (ConnectivityManager) getActivity().getSystemService(Context.CONNECTIVITY_SERVICE);
-			NetworkInfo ni = connectivityManager.getActiveNetworkInfo();
+					.logAction(this, "uploadButton", "noConnection");
 
-			if (NetworkReceiver.running == true) {
-				//another upload is already running
-				Toast.makeText(
-						getActivity(),
-						"Background send running, please try again shortly",
-						Toast.LENGTH_SHORT).show();
-			} else if (ni == null || !ni.isConnected()) {
-				//no network connection
-				Collect.getInstance().getActivityLogger()
-						.logAction(this, "uploadButton", "noConnection");
-
-				Toast.makeText(getActivity(),
-						R.string.no_connection, Toast.LENGTH_SHORT).show();
-			} else {
-				Collect.getInstance()
-						.getActivityLogger()
-						.logAction(this, "uploadButton",
-								Integer.toString(mSelected.size()));
-
-				if (mSelected.size() > 0) {
-					// items selected
-					uploadSelectedFiles();
-					mToggled = false;
-					mSelected.clear();
-					InstanceUploaderList.this.getListView().clearChoices();
-				} else {
-					// no items selected
-					Toast.makeText(getActivity().getApplicationContext(),
-							getString(R.string.noselect_error),
-							Toast.LENGTH_SHORT).show();
-				}
-			}
-
-			return true;
-		case R.id.select_all_instance:
-			// toggle selections of items to all or none
-			ListView ls = getListView();
-			mToggled = !mToggled;
-
+			Toast.makeText(getActivity(),
+					R.string.no_connection, Toast.LENGTH_SHORT).show();
+		} else {
 			Collect.getInstance()
 					.getActivityLogger()
-					.logAction(this, "toggleButton",
-							Boolean.toString(mToggled));
-			// remove all items from selected list
-			mSelected.clear();
-			for (int pos = 0; pos < ls.getCount(); pos++) {
-				ls.setItemChecked(pos, mToggled);
-				// add all items if mToggled sets to select all
-				if (mToggled)
-					mSelected.add(ls.getItemIdAtPosition(pos));
+					.logAction(this, "uploadButton",
+							Integer.toString(mSelected.size()));
+
+			if (mSelected.size() > 0) {
+				// items selected
+				uploadSelectedFiles();
+				mToggled = false;
+				mSelected.clear();
+				InstanceUploaderList.this.getListView().clearChoices();
+			} else {
+				// no items selected
+				Toast.makeText(getActivity().getApplicationContext(),
+						getString(R.string.noselect_error),
+						Toast.LENGTH_SHORT).show();
 			}
-			return true;
-		case android.R.id.home:
-	         // This is called when the Home (Up) button is pressed
-	         // in the Action Bar.
-	         Intent parentActivityIntent = new Intent(getActivity(), MainMenuActivity.class);
-	         parentActivityIntent.addFlags(
-	                 Intent.FLAG_ACTIVITY_CLEAR_TOP |
-	                 Intent.FLAG_ACTIVITY_NEW_TASK);
-	         startActivity(parentActivityIntent);
-	         getActivity().finish();
-	         return true;
-		case R.id.delete_upload_instance :
-			delete();
-			return true;
 		}
-        return super.onOptionsItemSelected(item);
 	}
 
 	private void createPreferencesMenu() {
@@ -264,7 +238,7 @@ public class InstanceUploaderList extends SherlockListFragment implements Delete
 		startActivity(i);
 	}
 	
-	private void delete () {
+	protected void delete () {
 		Collect.getInstance().getActivityLogger().logAction(this, "deleteButton", Integer.toString(mSelected.size()));
 		if (mSelected.size() > 0) {
 			createDeleteInstancesDialog();

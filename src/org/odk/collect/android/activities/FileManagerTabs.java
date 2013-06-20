@@ -67,46 +67,6 @@ public class FileManagerTabs extends SherlockFragmentActivity {
             mTabHost.setCurrentTabByTag(savedInstanceState.getString("tab")); //set the tab as per the saved state
         }
     }
-    
-     @Override
-     public boolean onCreateOptionsMenu(Menu menu) {
-    	 System.out.println("FileManagerTabs : OnCreateOptionsMenu");
-         Collect.getInstance().getActivityLogger().logAction(this, "onCreateOptionsMenu", "show");
-         getSupportMenuInflater().inflate(R.menu.menu_form_manager, menu);
-         return true;
-     }
-     
-     @Override
-     public boolean onOptionsItemSelected(MenuItem item) {
-         switch (item.getItemId()) {
-         case R.id.select_all:
-        	 Log.i("FileManagertabs", "Current tab : "+mTabHost.getCurrentTab());
-        	 if (mTabHost.getCurrentTab() == 1){
-        		 ((DataManagerList) getSupportFragmentManager().findFragmentByTag("data")).selectAll();
-        	 }else{
-        		 ((FormManagerList) getSupportFragmentManager().findFragmentByTag("forms")).selectAll();
-        	 }
-        	 return true;
-         case R.id.delete:
-        	 if (mTabHost.getCurrentTab() == 1){
-        		 ((DataManagerList) getSupportFragmentManager().findFragmentByTag("data")).delete();
-        	 }else{
-        		 ((FormManagerList) getSupportFragmentManager().findFragmentByTag("forms")).delete();
-        	 }
-        	 return true;
-	     case android.R.id.home:
-	         // This is called when the Home (Up) button is pressed
-	         // in the Action Bar.
-	         Intent parentActivityIntent = new Intent(this, MainMenuActivity.class);
-	         parentActivityIntent.addFlags(
-	                 Intent.FLAG_ACTIVITY_CLEAR_TOP |
-	                 Intent.FLAG_ACTIVITY_NEW_TASK);
-	         startActivity(parentActivityIntent);
-	         finish();
-	         return true;
-         }
-         return super.onOptionsItemSelected(item);
-     }
 
     protected void onSaveInstanceState(Bundle outState) {
         outState.putString("tab", mTabHost.getCurrentTabTag()); //save the tab selected

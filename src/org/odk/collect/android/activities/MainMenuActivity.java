@@ -25,7 +25,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.odk.collect.android.R;
+import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.preferences.AdminPreferencesActivity;
+import org.odk.collect.android.preferences.PreferencesActivity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
@@ -81,6 +83,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
 
 	private int mCompletedCount;
 	private int mSavedCount;
+	private int mCurrentDrawerPosition;
 
 	private Cursor mFinalizedCursor;
 	private Cursor mSavedCursor;
@@ -96,7 +99,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.main_menu);
-
+        
         mTitle = mDrawerTitle = "MakinaCollect";
         mPartsTitles = getResources().getStringArray(R.array.parts_array);
         mDrawerLayout = (DrawerLayout) findViewById(R.id.drawer_layout);
@@ -134,34 +137,48 @@ public class MainMenuActivity extends SherlockFragmentActivity {
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerLayout.openDrawer(mDrawerList);
-
-        if (savedInstanceState == null) {
-            selectItem(0);
-        }
+        
+        Log.i(getClass().getName(), "SelectItem(0)");
+        selectItem(0);
     }
 
-    //TODO 
-	/*@Override
+	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getSupportMenuInflater();
         inflater.inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
-    }*/
+    }
 
     /* Called whenever we call invalidateOptionsMenu() */
     @Override
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
-        //menu.findItem(R.id.general_preferences).setVisible(!drawerOpen);
+        menu.findItem(R.id.general_preferences).setVisible(drawerOpen);
+        
+        switch (mCurrentDrawerPosition) {
+        default:
+        	break;
+        case 2:
+        	getSupportMenuInflater().inflate(R.menu.menu_instance_uploader, menu);
+        	break;
+        case 3:
+        	getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
+        	break;
+        case 4:
+        	getSupportMenuInflater().inflate(R.menu.menu_form_manager, menu);
+        	break;
+        }
+        
         return super.onPrepareOptionsMenu(menu);
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-         // The action bar home/up action should open or close the drawer.
-         // ActionBarDrawerToggle will take care of this.
-        // Handle action buttons
+        // The action bar home/up action should open or close the drawer.
+        // ActionBarDrawerToggle will take care of this.
+        // Handle action buttons for all fragments
+    	Fragment fragment;
         switch(item.getItemId()) {
         case android.R.id.home:
             if (mDrawerLayout.isDrawerOpen(mDrawerList)) {
@@ -170,17 +187,59 @@ public class MainMenuActivity extends SherlockFragmentActivity {
                 mDrawerLayout.openDrawer(mDrawerList);
             }
             return true;
-        /*case R.id.general_preferences:
-            // create intent to perform web search for this planet
-            Intent intent = new Intent(Intent.ACTION_WEB_SEARCH);
-            intent.putExtra(SearchManager.QUERY, getSupportActionBar().getTitle());
-            // catch event that there's no activity to handle intent
-            if (intent.resolveActivity(getPackageManager()) != null) {
-                startActivity(intent);
-            } else {
-                Toast.makeText(this, "TOTO !", Toast.LENGTH_LONG).show();
-            }
-            return true;*/
+        case R.id.general_preferences:
+        	Collect.getInstance().getActivityLogger().logAction(this, "onMenuItemSelected", "MENU_PREFERENCES");
+            Intent i = new Intent(this, PreferencesActivity.class);
+            startActivity(i);
+            return true;
+        case R.id.upload_instance:
+        	fragment = getSupportFragmentManager().findFragmentByTag("upload");
+        	if (fragment != null){
+        		((InstanceUploaderList)fragment).uploadInstancesOption();
+        	}
+        	return true;
+        case R.id.select_all_instance:
+        	fragment = getSupportFragmentManager().findFragmentByTag("upload");
+        	if (fragment != null){
+        		((InstanceUploaderList)fragment).selectAllOption();
+        	}
+        	return true;
+        case R.id.delete_upload_instance:
+        	fragment = getSupportFragmentManager().findFragmentByTag("upload");
+        	if (fragment != null){
+        		((InstanceUploaderList)fragment).delete();
+        	}
+        	return true;
+        case R.id.select_all_download:
+        	fragment = getSupportFragmentManager().findFragmentByTag("download");
+        	if (fragment != null){
+        		((FormDownloadList)fragment).selectAllOption();
+        	}
+        	return true;
+        case R.id.forms_get:
+        	fragment = getSupportFragmentManager().findFragmentByTag("download");
+        	if (fragment != null){
+        		((FormDownloadList)fragment).getFormsOption();
+        	}
+        	return true;
+        case R.id.refresh_forms:
+        	fragment = getSupportFragmentManager().findFragmentByTag("download");
+        	if (fragment != null){
+        		((FormDownloadList)fragment).refreshFormsOption();
+        	}
+        	return true;
+        case R.id.delete_forms:
+        	fragment = getSupportFragmentManager().findFragmentByTag("delete");
+        	if (fragment != null){
+        		((FormManagerList)fragment).delete();
+        	}
+        	return true;
+        case R.id.select_all_forms:
+        	fragment = getSupportFragmentManager().findFragmentByTag("delete");
+        	if (fragment != null){
+        		((FormManagerList)fragment).selectAll();
+        	}
+        	return true;
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -200,28 +259,34 @@ public class MainMenuActivity extends SherlockFragmentActivity {
     	Fragment fragment;
     	
     	Log.e(getClass().getName(), "position : "+position);
-    	
+    	String tag;
     	switch (position){
     	default:
     	case 0:
     		fragment = new FormChooserList();
+    		tag = "fill";
     		break;
     	case 1:
     		fragment = new InstanceChooserList();
+    		tag = "edit";
     		break;
     	case 2:
     		fragment = new InstanceUploaderList();
+    		tag = "upload";
     		break;
     	case 3:
     		fragment = new FormDownloadList();
+    		tag = "download";
     		break;
     	case 4:
     		fragment = new FormManagerList();
+    		tag = "delete";
     		break;
     	}
+    	mCurrentDrawerPosition = position;
 
         FragmentManager fragmentManager = getSupportFragmentManager();
-        fragmentManager.beginTransaction().replace(R.id.content_frame, fragment).commit();
+        fragmentManager.beginTransaction().replace(R.id.content_frame, fragment, tag ).commit();
 
         // update selected item and title, then close the drawer
         mDrawerList.setItemChecked(position, true);
@@ -254,33 +319,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
         mDrawerToggle.onConfigurationChanged(newConfig);
     }
 
-    /**
-     * Fragment that appears in the "content_frame", shows a planet
-     */
-    public static class PlanetFragment extends Fragment {
-        public static final String ARG_PLANET_NUMBER = "planet_number";
-
-        public PlanetFragment() {
-            // Empty constructor required for fragment subclasses
-        }
-
-        @Override
-        public View onCreateView(LayoutInflater inflater, ViewGroup container,
-                Bundle savedInstanceState) {
-            View rootView = inflater.inflate(R.layout.fragment_planet, container, false);
-            int i = getArguments().getInt(ARG_PLANET_NUMBER);
-            String planet = getResources().getStringArray(R.array.parts_array)[i];
-
-            int imageId = getResources().getIdentifier(planet.toLowerCase(Locale.getDefault()),
-                            "drawable", getActivity().getPackageName());
-            ((ImageView) rootView.findViewById(R.id.image)).setImageResource(imageId);
-            getActivity().setTitle(planet);
-            return rootView;
-        }
-    }
-
-
-
+    
 	/**
 	 * notifies us that something changed
 	 * 
@@ -408,7 +447,4 @@ public class MainMenuActivity extends SherlockFragmentActivity {
 			return null;
 		}
 	}
-	
-	
-	
 }
