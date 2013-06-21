@@ -15,5 +15,5 @@
     <item android:id="@+id/preferences_download"
           android:icon="@android:drawable/ic_menu_preferences"
           android:title="@string/general_preferences"
-          android:showAsAction="ifRoom|withText"/>
+          android:showAsAction="never"/>
 </menu>

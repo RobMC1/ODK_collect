@@ -147,8 +147,6 @@ public class MainMenuActivity extends SherlockFragmentActivity {
 
 	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getSupportMenuInflater();
-        inflater.inflate(R.menu.main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
@@ -157,6 +155,8 @@ public class MainMenuActivity extends SherlockFragmentActivity {
     public boolean onPrepareOptionsMenu(Menu menu) {
         // If the nav drawer is open, hide action items related to the content view
         boolean drawerOpen = mDrawerLayout.isDrawerOpen(mDrawerList);
+        MenuInflater inflater = getSupportMenuInflater();
+        inflater.inflate(R.menu.main, menu);
         menu.findItem(R.id.general_preferences).setVisible(drawerOpen);
         
         switch (mCurrentDrawerPosition) {
@@ -164,16 +164,19 @@ public class MainMenuActivity extends SherlockFragmentActivity {
         	break;
         case 2:
         	if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        		menu.clear();
         		getSupportMenuInflater().inflate(R.menu.menu_instance_uploader, menu);
         	}
         	break;
         case 3:
         	if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        		menu.clear();
         		getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
         	}
         	break;
         case 4:
         	if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        		menu.clear();
         		getSupportMenuInflater().inflate(R.menu.menu_form_manager, menu);
         	}
         	break;
@@ -197,6 +200,9 @@ public class MainMenuActivity extends SherlockFragmentActivity {
             }
             return true;
         case R.id.general_preferences:
+        case R.id.preferences_delete:
+        case R.id.preferences_download:
+        case R.id.preferences_uploader:
         	Collect.getInstance().getActivityLogger().logAction(this, "onMenuItemSelected", "MENU_PREFERENCES");
             Intent i = new Intent(this, PreferencesActivity.class);
             startActivity(i);

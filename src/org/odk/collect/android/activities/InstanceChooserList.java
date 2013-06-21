@@ -126,7 +126,8 @@ public class InstanceChooserList extends SherlockListFragment{
             // caller wants to view/edit a form, so launch formentryactivity
             startActivity(new Intent(Intent.ACTION_EDIT, instanceUri));
         }
-        getActivity().finish();
+        //TODO 
+        //getActivity().finish();
     }
 	
     @Override

@@ -147,10 +147,13 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
             getActivity().setResult(getActivity().RESULT_OK, new Intent().setData(formUri));
         } else {
             // caller wants to view/edit a form, so launch formentryactivity
-            startActivity(new Intent(Intent.ACTION_EDIT, formUri));
+        	Intent i = new Intent(Intent.ACTION_EDIT, formUri);
+        	i.putExtra("newForm", true);
+            startActivity(i);
         }
-
-        getActivity().finish();
+        
+        //TODO  
+        //getActivity().finish();
     }
     
     //TODO Back to previous task
