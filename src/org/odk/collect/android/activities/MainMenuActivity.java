@@ -138,8 +138,11 @@ public class MainMenuActivity extends SherlockFragmentActivity {
         mDrawerLayout.setDrawerListener(mDrawerToggle);
         mDrawerLayout.openDrawer(mDrawerList);
         
-        Log.i(getClass().getName(), "SelectItem(0)");
-        selectItem(0);
+        if (getIntent().hasExtra("drawerSelection")){
+        	selectItem(getIntent().getIntExtra("drawerSelection", 0));
+        }else{
+            selectItem(0);
+        }
     }
 
 	@Override
@@ -160,13 +163,19 @@ public class MainMenuActivity extends SherlockFragmentActivity {
         default:
         	break;
         case 2:
-        	getSupportMenuInflater().inflate(R.menu.menu_instance_uploader, menu);
+        	if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        		getSupportMenuInflater().inflate(R.menu.menu_instance_uploader, menu);
+        	}
         	break;
         case 3:
-        	getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
+        	if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        		getSupportMenuInflater().inflate(R.menu.menu_form_download, menu);
+        	}
         	break;
         case 4:
-        	getSupportMenuInflater().inflate(R.menu.menu_form_manager, menu);
+        	if (!mDrawerLayout.isDrawerOpen(mDrawerList)) {
+        		getSupportMenuInflater().inflate(R.menu.menu_form_manager, menu);
+        	}
         	break;
         }
         

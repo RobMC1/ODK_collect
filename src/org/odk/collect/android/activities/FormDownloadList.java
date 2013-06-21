@@ -377,7 +377,7 @@ public class FormDownloadList extends SherlockListFragment implements FormListDo
                         @Override
                         public void onClick(DialogInterface dialog, int which) {
                             Collect.getInstance().getActivityLogger().logAction(this, "onCreateDialog.AUTH_DIALOG", "Cancel");
-                            getActivity().finish();
+                            //getActivity().finish();
                         }
                     });
 
@@ -597,9 +597,9 @@ public class FormDownloadList extends SherlockListFragment implements FormListDo
                         // just close the dialog
                         mAlertShowing = false;
                         // successful download, so quit
-                        if (shouldExit) {
+                        /*if (shouldExit) {
                             getActivity().finish();
-                        }
+                        }*/
                         break;
                 }
             }

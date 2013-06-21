@@ -158,9 +158,11 @@ public class FormHierarchyActivity extends SherlockListActivity {
 				Log.e(getClass().getName(), "Back to List");
 				Intent i;
 				if (mToFormChooser){
-					i  = new Intent(this, FormChooserList.class);
+					i  = new Intent(this, MainMenuActivity.class);
+					i.putExtra("drawerSelection", 0);
 				}else{
-					i  = new Intent(this, InstanceChooserList.class);
+					i  = new Intent(this, MainMenuActivity.class);
+					i.putExtra("drawerSelection", 1);
 				}
 				startActivity(i);
 			}else{
@@ -458,9 +460,11 @@ public class FormHierarchyActivity extends SherlockListActivity {
 						mStartIndex);
 				Intent i;
 				if (mToFormChooser){
-					i  = new Intent(this, FormChooserList.class);
+					i  = new Intent(this, MainMenuActivity.class);
+					i.putExtra("drawerSelection", 0);
 				}else{
-					i  = new Intent(this, InstanceChooserList.class);
+					i  = new Intent(this, MainMenuActivity.class);
+					i.putExtra("drawerSelection", 1);
 				}
 				startActivity(i);
 			}else{

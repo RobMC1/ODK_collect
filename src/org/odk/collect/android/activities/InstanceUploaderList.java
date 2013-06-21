@@ -345,9 +345,9 @@ public class InstanceUploaderList extends SherlockListFragment implements Delete
 			if (intent.getBooleanExtra(FormEntryActivity.KEY_SUCCESS, false)) {
 				mSelected.clear();
 				getListView().clearChoices();
-				if (mInstances.isEmpty()) {
+				/*if (mInstances.isEmpty()) {
 					getActivity().finish();
-				}
+				}*/
 			}
 			break;
 		default:

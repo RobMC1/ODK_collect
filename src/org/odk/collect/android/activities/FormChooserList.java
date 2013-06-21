@@ -57,6 +57,8 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
 
     private AlertDialog mAlertDialog;
     
+    private String statusText;
+    
     
     @Override
 	public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -102,14 +104,13 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
             new VersionHidingCursorAdapter(FormsColumns.JR_VERSION, getActivity(), R.layout.two_item, c, data, view);
         setListAdapter(instances);
 
-        /*if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
-            TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
-            tv.setText(savedInstanceState.getString(syncMsgKey));
-        }*/
+        if (savedInstanceState != null && savedInstanceState.containsKey(syncMsgKey)) {
+            statusText = savedInstanceState.getString(syncMsgKey);
+        }
 
         // DiskSyncTask checks the disk for any forms not already in the content provider
         // that is, put here by dragging and dropping onto the SDCard
-        mDiskSyncTask = (DiskSyncTask) getActivity().getLastNonConfigurationInstance();
+        //mDiskSyncTask = (DiskSyncTask) getActivity().getLastNonConfigurationInstance();
         if (mDiskSyncTask == null) {
             Log.i(t, "Starting new disk sync task");
             mDiskSyncTask = new DiskSyncTask();
@@ -125,9 +126,7 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
 	@Override
 	public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        //TODO Not working, onPause() will cause the application to crash
-        //TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
-        //outState.putString(syncMsgKey, tv.getText().toString());
+        outState.putString(syncMsgKey, statusText);
     }
 
 
@@ -208,9 +207,7 @@ public class FormChooserList extends SherlockListFragment implements DiskSyncLis
     @Override
     public void SyncComplete(String result) {
         Log.i(t, "disk sync task complete");
-        //TODO This makes the application crash
-        //TextView tv = (TextView) getActivity().findViewById(R.id.status_text);
-        //tv.setText(result);
+        statusText = result;
     }
 
 
