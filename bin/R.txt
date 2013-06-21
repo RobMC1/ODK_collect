@@ -414,7 +414,7 @@ int id default_completed 0x7f070091
 int id default_to_finalized 0x7f070085
 int id delete_forms 0x7f0700a2
 int id delete_saved 0x7f07007b
-int id delete_upload_instance 0x7f0700a5
+int id delete_upload_instance 0x7f0700a6
 int id description 0x7f070046
 int id disableHome 0x7f07000d
 int id drawViewLayout 0x7f07003a
@@ -461,9 +461,10 @@ int id password_edit 0x7f07006b
 int id password_view 0x7f07006a
 int id pathtext 0x7f07005a
 int id positive_button 0x7f070063
+int id preferences_delete 0x7f0700a3
 int id preferences_download 0x7f07009d
 int id preferences_entry 0x7f0700a0
-int id preferences_uploader 0x7f0700a6
+int id preferences_uploader 0x7f0700a7
 int id protocol 0x7f070094
 int id pwd_field 0x7f070060
 int id pwd_label 0x7f07005f
@@ -484,7 +485,7 @@ int id save_mid 0x7f07008a
 int id save_name 0x7f070048
 int id select_all_download 0x7f07009b
 int id select_all_forms 0x7f0700a1
-int id select_all_instance 0x7f0700a3
+int id select_all_instance 0x7f0700a4
 int id selected_google_account 0x7f070093
 int id send_finalized 0x7f070079
 int id server_url 0x7f07008d
@@ -508,7 +509,7 @@ int id text2 0x7f070075
 int id text3 0x7f070074
 int id text_advance 0x7f07004f
 int id text_backup 0x7f07004d
-int id upload_instance 0x7f0700a4
+int id upload_instance 0x7f0700a5
 int id url 0x7f070071
 int id useLogo 0x7f070008
 int id username 0x7f07008e
