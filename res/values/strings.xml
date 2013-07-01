@@ -11,8 +11,6 @@
 		License.
 -->
 <resources>
-    <string name="drawer_open">Open navigation drawer</string>
-    <string name="drawer_close">Close navigation drawer</string>
 <string name="accept_location">Record Location</string>
 <string name="accuracy">Accuracy</string>
 <string name="activity_not_found">No activity found to handle: %s</string>
@@ -65,6 +63,8 @@
 <string name="do_not_change">Cancel</string>
 <string name="do_not_exit">Cancel</string>
 <string name="do_not_save">Ignore Changes</string>
+<string name="drawer_open">open drawer</string>
+<string name="drawer_close">close drawer</string>
 <string name="entering_repeat">Add Group</string>
 <string name="entering_repeat_ask">Add New Group?</string>
 <string name="enter_data">Fill Blank Form</string>
@@ -107,6 +107,8 @@
 <string name="no_items_display">Nothing available to display.</string>
 <string name="no_items_display_forms">Nothing available to display.\n\nTry getting and filling out a blank form.</string>
 <string name="no_items_display_instances">Nothing available to display.\n\nTry finalizing saved forms before sending.</string>
+<string name="offline_mode">Offline maps ?</string>
+<string name="offline_mode_summary">Choose if you want tu use offline maps or not</string>
 <string name="ok">OK</string>
 <string name="parse_error">Sorry, unable to parse form.</string>
 <string name="parse_legacy_formlist_failed">The server has not provided an available-forms document compatible with Aggregate 0.9.x. : %s</string>
@@ -251,9 +253,9 @@
 <string name="swipe_navigation">Use horizontal swipes</string>
 <string name="buttons_navigation">Use forward/backward buttons</string>
 <string name="swipe_buttons_navigation">Use swipes and buttons</string>
-<string name="swipe_instructions">You are at the start of %s. Swipe the screen as shown below to go backward and forward.</string>
-<string name="buttons_instructions">You are at the start of %s. Tap the arrow buttons below to go backward and forward.</string>
-<string name="swipe_buttons_instructions">You are at the start of %s. Swipe the screen as shown below or tap the arrow buttons to go backward and forward.</string>
+<string name="swipe_instructions">You are at the start of %s.\nTo navigate from a page to another in the form swipe the screen.</string>
+<string name="buttons_instructions">You are at the start of %s.\nTo navigate from a page to another in the form tap the arrow buttons below.</string>
+<string name="swipe_buttons_instructions">You are at the start of %s. \nTo navigate from a page to another in the form swipe the screen or tap the arrow buttons below.</string>
 <string name="change_url_default">URL</string>
 <string name="launch_printer">Initiate Printing</string>
 <string name="no_printer">The requested printer is not installed. Please install the printer.</string>

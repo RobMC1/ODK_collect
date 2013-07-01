@@ -20,18 +20,17 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.lang.ref.WeakReference;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Map.Entry;
 
 import org.odk.collect.android.R;
+import org.odk.collect.android.adapters.DrawerAdapter;
 import org.odk.collect.android.application.Collect;
 import org.odk.collect.android.preferences.AdminPreferencesActivity;
 import org.odk.collect.android.preferences.PreferencesActivity;
 
 import android.app.AlertDialog;
 import android.app.Dialog;
-import android.app.SearchManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
@@ -48,14 +47,9 @@ import android.support.v4.app.FragmentManager;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.util.Log;
-import android.view.LayoutInflater;
 import android.view.View;
-import android.view.ViewGroup;
 import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.ImageView;
 import android.widget.ListView;
-import android.widget.Toast;
 
 import com.actionbarsherlock.app.SherlockFragmentActivity;
 import com.actionbarsherlock.view.Menu;
@@ -108,8 +102,7 @@ public class MainMenuActivity extends SherlockFragmentActivity {
         // set a custom shadow that overlays the main content when the drawer opens
         mDrawerLayout.setDrawerShadow(R.drawable.drawer_shadow, GravityCompat.START);
         // set up the drawer's list view with items and click listener
-        mDrawerList.setAdapter(new ArrayAdapter<String>(this,
-                R.layout.drawer_list_item, mPartsTitles));
+        mDrawerList.setAdapter(new DrawerAdapter(this, mPartsTitles));
         mDrawerList.setOnItemClickListener(new DrawerItemClickListener());
 
         // enable ActionBar app icon to behave as action to toggle nav drawer
@@ -136,12 +129,13 @@ public class MainMenuActivity extends SherlockFragmentActivity {
             }
         };
         mDrawerLayout.setDrawerListener(mDrawerToggle);
-        mDrawerLayout.openDrawer(mDrawerList);
+        
         
         if (getIntent().hasExtra("drawerSelection")){
         	selectItem(getIntent().getIntExtra("drawerSelection", 0));
         }else{
             selectItem(0);
+            mDrawerLayout.openDrawer(mDrawerList);
         }
     }
 

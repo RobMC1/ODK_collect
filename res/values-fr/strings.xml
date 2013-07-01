@@ -63,6 +63,8 @@ License.
 <string name="do_not_change">Annuler</string>
 <string name="do_not_exit">Annuler</string>
 <string name="do_not_save">Ignorer les changements</string>
+<string name="drawer_open">Ouvrir le panneau de navigation</string>
+<string name="drawer_close">Fermer le panneau de navigation</string>
 <string name="entering_repeat">Ajouter un groupe</string>
 <string name="entering_repeat_ask">Ajouter un nouveau groupe?</string>
 <string name="enter_data">Remplir un formulaire</string>
@@ -96,7 +98,7 @@ License.
 <string name="longitude">Longitude</string>
 <string name="main_menu">Menu Principal</string>
 <string name="main_menu_details">La collecte de données rendue plus facile…</string>
-<string name="manage_files">Supprimer des Formulaires Sauvegardés</string>
+<string name="manage_files">Supprimer des formulaires sauvegardés</string>
 <string name="marker_create">Vous pouvez créer et déplacer un marqueur en appuyant longuement là où vous voulez le placer, puis le déplacer en appuyant longuement dessus</string>
 <string name="marker_draggable">Vous pouvez déplacer le marqueur sur la carte soit en appuyant longuement dessus et en le déplacant, soit en appuyant longuement là où vous voulez le placer</string>
 <string name="mark_finished">Marquer le formulaire comme finalisé</string>
@@ -105,6 +107,8 @@ License.
 <string name="no_items_display">Rien à afficher.</string>
 <string name="no_items_display_forms">Rien à afficher.\n\nEssayez d\'obtenir et remplir un formulaire.</string>
 <string name="no_items_display_instances">Rien à afficher.\n\nEssayez de finaliser vos formulaires avant de les envoyer.</string>
+<string name="offline_mode">Cartes hors-ligne ?</string>
+<string name="offline_mode_summary">Utiliser ou non les cartes hors-line.</string>
 <string name="ok">OK</string>
 <string name="parse_error">Désolé. Impossible d\'analyser le formulaire.</string>
 <string name="parse_legacy_formlist_failed">Le serveur n\'a pas pu produire un document de formulaire compatible avec Aggregate 0.9.x. : %s</string>
@@ -249,9 +253,9 @@ License.
 <string name="swipe_navigation">Utiliser des swipes horizontaux</string>
 <string name="buttons_navigation">Utiliser des boutons prochain/précédent</string>
 <string name="swipe_buttons_navigation">Utiliser des swipes et des boutons</string>
-<string name="swipe_instructions">Vous êtes au début de %s. Faites des swipes à l\'écran pour avancer et revenir.</string>
-<string name="buttons_instructions">Vous êtes au début de %s. Appuyez sur les flêches pour avancer et revenir.</string>
-<string name="swipe_buttons_instructions">Vous êtes au début de %s. Faites des swipes à l\'écran ou appuyez sur les flêches pour avancer et revenir.</string>
+<string name="swipe_instructions">Vous êtes au début du formulaire %s.\nUne fois dans le formulaire, pour naviguer d\'une page à l\'autre glissez votre doigt sur l\'écran.\nPour commencer glissez vers la gauche.</string>
+<string name="buttons_instructions">Vous êtes au début du formulaire %s.\nUne fois dans le formulaire, pour naviguer d\'une page à l\'autre appuyez sur les flèches en bas de l\'écran.\nPour commencer appuyez sur la flèche de droite.</string>
+<string name="swipe_buttons_instructions">Vous êtes au début du formulaire %s.\nUne fois dans le formulaire, pour naviguer d\'une page à l\'autre glissez votre doigt sur l\'écran ou appuyez sur les flèches en bas de l\'écran.\nPour commencer glissez vers la gauche ou appuyez sur la flèche de droite.</string>
 <string name="change_url_default">URL</string>
 <string name="launch_printer">Démarrer l\'impression</string>
 <string name="no_printer">L\'imprimante demandée n\'est pas installée. Veuillez installer l\'imprimante</string>

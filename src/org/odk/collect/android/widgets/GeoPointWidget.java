@@ -52,7 +52,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 	public static final String LOCATION = "gp";
 	public static final String ACCURACY_THRESHOLD = "accuracyThreshold";
 
-	public static final double DEFAULT_LOCATION_ACCURACY = 5.0;
+	public static final double DEFAULT_LOCATION_ACCURACY = 35.0;
 
 	private Button mGetLocationButton;
 	private Button mViewButton;
@@ -67,12 +67,14 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 	private boolean mUseMaps;
 	private boolean mUseGPS;
 	private boolean mIsReadOnly;
+	private boolean mOfflineMode;
 	private double mAccuracyThreshold;
 
 	public GeoPointWidget(Activity activity, WidgetAnsweredListener widgetAnsweredListener, FormEntryPrompt prompt) {
 		super(activity, widgetAnsweredListener, prompt);
 		mUseGPS = true;
 		mUseMaps = true;
+		mOfflineMode = true;
 		
 		String acc = prompt.getQuestion().getAdditionalAttribute(null, ACCURACY_THRESHOLD);
 		if ( acc != null && acc.length() != 0 ) {
@@ -134,7 +136,9 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 						.logInstanceAction(this, "showLocation", "click",
 								mPrompt.getIndex());
 				Intent i = new Intent(getContext(), GeoPointMapActivity.class);
-				
+				if (mOfflineMode == true){
+					i.putExtra("offLine", true);
+				}
 				if (mUseMaps && !mUseGPS){
 					i.putExtra("noGPS", true);
 				}
@@ -251,9 +255,11 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 								mPrompt.getIndex());
 				Intent i = null;
 				
-				
 				if (mUseMaps) {
 					i = new Intent(getContext(), GeoPointMapActivity.class);
+					if (mOfflineMode == true){
+						i.putExtra("offLine", true);
+					}
 				} else {
 					i = new Intent(getContext(), GeoPointActivity.class);
 				}
@@ -396,6 +402,7 @@ public class GeoPointWidget extends QuestionWidget implements IBinaryWidget {
 	
 	private void refreshWidget () {
 		mUseMaps = mUseMaps && PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("key_use_maps", true);
+		mOfflineMode = PreferenceManager.getDefaultSharedPreferences(getContext()).getBoolean("key_offline_mode", true);
 		if (!mIsReadOnly){
 			if (mUseMaps){
 				if (mUseGPS){

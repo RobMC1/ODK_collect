@@ -51,10 +51,17 @@
 		<item>@string/swipe_buttons_navigation</item>
 	</string-array>
 	<string-array name="parts_array">
-        <item>Fill</item>
-        <item>Edit</item>
-        <item>Send</item>
-        <item>Download</item>
-        <item>Delete</item>
+        <item>@string/enter_data_button</item>
+        <item>@string/review_data_button</item>
+        <item>@string/send_data_button</item>
+        <item>@string/get_forms</item>
+        <item>@string/manage_files</item>
+    </string-array>
+    <string-array name="parts_icons_array">
+        <item>@android:drawable/ic_menu_add</item>
+        <item>@android:drawable/ic_menu_edit</item>
+        <item>@android:drawable/ic_menu_upload</item>
+        <item>@drawable/stat_sys_download_anim0</item>
+        <item>@android:drawable/ic_menu_delete</item>
     </string-array>
 </resources>
