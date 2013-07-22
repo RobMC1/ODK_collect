@@ -4,7 +4,7 @@ ODK_collect
 ODK Collect is a phone-based replacement for your paper forms. It renders a form, survey, or algorithm into prompts that support complex logic, repeating questions, and multiple languages. Data types include text, location, photos, video, audio, and barcodes. Collect is part of the Open Data Kit tool suite, go to http://opendatakit.org to find out more.
 (official description of ODK_Collect from the Play Store)
 
-This application is based on ODK_Collect but it's not the version you can find in the store. This version uses the look of the last android versions (3.0 and more) with backward support, improves the geolocalisation UI and fixes a few bugs.
+This application is based on ODK_Collect but it's not the version you can find in the store. This version uses the look of the last android versions (3.0 and more), improves the geolocalisation UI and fixes a few bugs. It is supposed to have backward compatibility, but it's not working yet, only API 11 and more are supported.
 
 User aspects : 
 
