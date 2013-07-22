@@ -9,7 +9,7 @@
 	the specific language governing permissions and limitations under the License.
 -->
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="org.odk.collect.android"
+    package="com.makina.collect.android"
     android:versionCode="1029"
     android:versionName="1.3" >
 
@@ -33,11 +33,11 @@
     <uses-permission android:name="com.google.android.providers.gsf.permission.READ_GSERVICES"/>
     
     <permission
-        android:name="org.odk.collect.android.MAPS_RECEIVE"
+        android:name="com.makina.collect.android.MAPS_RECEIVE"
         android:protectionLevel="signature"/>
-	<uses-permission android:name="org.odk.collect.android.MAPS_RECEIVE"/>
+	<uses-permission android:name="com.makina.collect.android.MAPS_RECEIVE"/>
 
-    <uses-sdk android:minSdkVersion="7" >
+    <uses-sdk android:minSdkVersion="11" >
     </uses-sdk>
     <uses-feature
         android:glEsVersion="0x00020000"
@@ -51,16 +51,16 @@
         android:smallScreens="true" />
 
     <application
-        android:name="org.odk.collect.android.application.Collect"
+        android:name=".application.Collect"
         android:icon="@drawable/notes"
         android:label="@string/app_name"
         android:theme="@style/Collect">
         <provider
-            android:name="org.odk.collect.android.provider.FormsProvider"
-            android:authorities="org.odk.collect.android.provider.odk.forms" />
+            android:name=".provider.FormsProvider"
+            android:authorities="com.makina.collect.android.provider.odk.forms" />
         <provider
-            android:name="org.odk.collect.android.provider.InstanceProvider"
-            android:authorities="org.odk.collect.android.provider.odk.instances" />
+            android:name=".provider.InstanceProvider"
+            android:authorities="com.makina.collect.android.provider.odk.instances" />
 
         <activity
             android:name=".activities.MainMenuActivity"
@@ -175,9 +175,16 @@
                 <action android:name="android.net.conn.CONNECTIVITY_CHANGE" />
             </intent-filter>
             <intent-filter>
-                <action android:name="org.odk.collect.android.FormSaved" />
+                <action android:name="com.makina.collect.android.FormSaved" />
             </intent-filter>
         </receiver>
+        
+        <service 
+            android:name="org.openudid.OpenUDID_service">
+    		<intent-filter>
+        		<action android:name="org.openudid.GETUDID" />
+    		</intent-filter>
+		</service>
 
         <uses-library
             android:name="com.google.android.maps"
@@ -185,7 +192,7 @@
         
         <meta-data
             android:name="com.google.android.maps.v2.API_KEY"
-            android:value="AIzaSyAnQUoDAkG1tralLWuG8Hg_xa970xRKw-o" />
+            android:value="AIzaSyDrIrtIzY1y8-_bag1exAocH23YCauyiq0" />
     </application>
 
 </manifest>

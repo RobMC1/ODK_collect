@@ -159,7 +159,6 @@ License.
 <string name="use_odk_default">Utiliser l\'image par défaut</string>
 <string name="change_splash_path">Modifier l\'image</string>
 <string name="show_location">Afficher le lieu</string>
-<string name="app_url">http://opendatakit.org</string>
 <string name="keep_changes">Sauvegarder les modifications</string>
 <string name="go_to_location">Aller au lieu</string>
 <string name="change_formlist_url">Chemin de la liste de formulaires (ajouté à l\'URL du serveur)</string>
